@@ -17,8 +17,8 @@ func GetUsers(conn *gorm.DB) []models.UserResponse {
 	return users
 }
 
-func GetUser(conn *gorm.DB, name string) models.UserResponse {
-	var user models.UserResponse
+func GetUser(conn *gorm.DB, name string) models.User {
+	var user models.User
 
 	conn.Model(&MUser).Where("username = ?", name).Find(&user)
 	return user
