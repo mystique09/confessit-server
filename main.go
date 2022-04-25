@@ -25,6 +25,7 @@ func main() {
 	app.POST("/auth", route.Login)
 	app.POST("/signup", route.Signup)
 	app.POST("/refresh", route.Refresh)
+	app.POST("/logout", route.Logout)
 
 	user_g := app.Group("/users", route.AuthMiddleware)
 	{
