@@ -17,6 +17,9 @@ func main() {
 
 	app := echo.New()
 	app.Use(routers.CustomLoggerMiddleware())
+	app.Use(routers.CustomCORSMiddleware())
+	app.Use(routers.CustomCSRFMiddleware())
+	app.Use(routers.CustomRateLimitMiddleware())
 
 	app.GET("/", routers.ConfessIt)
 	app.POST("/auth", route.Login)
