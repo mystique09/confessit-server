@@ -1,3 +1,0 @@
-DATABASE_URL=postgres://mystique09:mystique09@localhost/confessit
-SECRET_KEY=secret
-FRONTEND_URL=http://localhost:3000/

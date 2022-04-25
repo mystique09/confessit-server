@@ -4,6 +4,7 @@ import (
 	"confessit/db"
 	"confessit/models"
 	"confessit/routers"
+	"os"
 
 	"github.com/labstack/echo/v4"
 )
@@ -37,5 +38,5 @@ func main() {
 		message_g.DELETE("/:id", route.DeleteMessage)
 	}
 
-	app.Logger.Fatal(app.Start(":5000"))
+	app.Logger.Fatal(app.Start(":" + os.Getenv("PORT")))
 }
