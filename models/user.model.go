@@ -27,14 +27,24 @@ func (u *User) HashPassword() error {
 	return nil
 }
 
+func (u *User) ValidatePassword(password string) error {
+	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
+	return err
+}
+
 type UserCreatePayload struct {
 	Username string `json:"username" validate:"required,min=8,max=18"`
-	Password string `json:"password" validate:"required,numeric,min=12"`
+	Password string `json:"password" validate:"required,min=8"`
+}
+
+type UserLoginPayload struct {
+	Username string `json:"username" validate:"required,min=8,max=18"`
+	Password string `json:"password" validate:"required,min=8"`
 }
 
 type UserUpdatePayload struct {
 	Username string `json:"username" validate:"required,min=8,max=18"`
-	Password string `json:"password" validate:"required,numeric,min=12"`
+	Password string `json:"password" validate:"required,min=12"`
 }
 
 type UserResponse struct {
