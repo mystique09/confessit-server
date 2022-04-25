@@ -16,6 +16,16 @@ type User struct {
 	DeletedAt time.Time `json:"deleted_at" gorm:"index"`
 }
 
+type Session struct {
+	ID       uuid.UUID
+	Username string
+	Expiry   time.Time
+}
+
+func (s *Session) IsExpired() bool {
+	return s.Expiry.Before(time.Now())
+}
+
 func (u *User) HashPassword() error {
 	hash_password, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
 
