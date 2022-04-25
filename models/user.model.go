@@ -32,6 +32,16 @@ func (u *User) ValidatePassword(password string) error {
 	return err
 }
 
+func (u *User) ToResponse() UserResponse {
+	return UserResponse{
+		ID:        u.ID,
+		Username:  u.Username,
+		CreatedAt: u.CreatedAt,
+		UpdatedAt: u.UpdatedAt,
+		DeletedAt: u.DeletedAt,
+	}
+}
+
 type UserCreatePayload struct {
 	Username string `json:"username" validate:"required,min=8,max=18"`
 	Password string `json:"password" validate:"required,min=8"`
