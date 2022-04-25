@@ -3,7 +3,9 @@ package routers
 import (
 	"confessit/handlers"
 	"confessit/models"
+	"confessit/utils"
 	"net/http"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -19,14 +21,13 @@ func (r *Route) Signup(c echo.Context) error {
 	}
 
 	if err := validate.Struct(payload); err != nil {
-		return c.JSON(http.StatusBadRequest, err)
+		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
 	hasUser := handlers.GetUser(r.Conn, payload.Username)
 
 	if hasUser.Username != "" {
 		return c.JSON(http.StatusBadRequest, "user already exist.")
-
 	}
 
 	if err := handlers.CreateUser(r.Conn, payload); err != nil {
@@ -37,5 +38,28 @@ func (r *Route) Signup(c echo.Context) error {
 }
 
 func (r *Route) Login(c echo.Context) error {
-	return c.String(http.StatusOK, "Login")
+	var payload models.UserLoginPayload
+
+	if err := (&echo.DefaultBinder{}).BindBody(c, &payload); err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	if err := validate.Struct(payload); err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	hasUser := handlers.GetUser(r.Conn, payload.Username)
+
+	if hasUser.Username == "" {
+		return c.JSON(http.StatusBadRequest, "user does not exist.")
+	}
+
+	if err := hasUser.ValidatePassword(payload.Password); err != nil {
+		return c.JSON(http.StatusBadRequest, "password mismatch.")
+	}
+
+	cookie := utils.CreateCookie("auth", "testcookie", time.Now().Add(time.Hour*6).Hour())
+	c.SetCookie(&cookie)
+
+	return c.JSON(http.StatusOK, "logged in")
 }
