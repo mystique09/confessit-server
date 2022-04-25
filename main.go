@@ -38,5 +38,11 @@ func main() {
 		message_g.DELETE("/:id", route.DeleteMessage)
 	}
 
-	app.Logger.Fatal(app.Start(":" + os.Getenv("PORT")))
+	var port string = os.Getenv("PORT")
+
+	if port == "" {
+		port = "5000"
+	}
+
+	app.Logger.Fatal(app.Start(":" + port))
 }
