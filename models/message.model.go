@@ -11,10 +11,10 @@ type Message struct {
 }
 
 type MessageCreatePayload struct {
-	To      string `json:"to"`
-	Message string `json:"message"`
+	To      string `json:"to" validate:"required"`
+	Message string `json:"message" validate:"required,min=1,max=1500"`
 }
 
 type MessageDeletePayload struct {
-	ID int `json:"id"`
+	ID int `json:"id" validate:"required,numeric"`
 }
