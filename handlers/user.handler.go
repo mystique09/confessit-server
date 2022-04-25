@@ -24,6 +24,13 @@ func GetUser(conn *gorm.DB, name string) models.User {
 	return user
 }
 
+func GetUserById(conn *gorm.DB, uid uuid.UUID) models.UserResponse {
+	var user models.UserResponse
+
+	conn.Model(&MUser).Where("id = ?", uid).Find(&user)
+	return user
+}
+
 func CreateUser(conn *gorm.DB, payload models.UserCreatePayload) error {
 	var nuser models.User = models.User{
 		ID:        uuid.New(),
