@@ -10,9 +10,7 @@ import (
 )
 
 func ConnectDb() *gorm.DB {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal(err)
-	}
+	godotenv.Load()
 
 	DATABASE_URL := os.Getenv("DATABASE_URL")
 
