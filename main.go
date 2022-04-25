@@ -26,8 +26,8 @@ func main() {
 	{
 		user_g.GET("", route.GetUsers)
 		user_g.GET("/:name", route.GetUser)
-		user_g.PUT("/:id", route.UpdateUser)
-		user_g.DELETE("/:id", route.DeleteUser)
+		user_g.PUT("/:name", route.UpdateUser)
+		user_g.DELETE("/:name", route.DeleteUser)
 	}
 
 	message_g := app.Group("/messages")
