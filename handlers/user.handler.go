@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -18,26 +17,31 @@ func GetUsers(conn *gorm.DB) []models.UserResponse {
 	return users
 }
 
-func GetUser(conn *gorm.DB, name string) models.UserResponse {
-	var user models.UserResponse
+func GetUser(conn *gorm.DB, name string) models.User {
+	var user models.User
 
 	conn.Model(&MUser).Where("username = ?", name).Find(&user)
 	return user
 }
 
+func GetUserById(conn *gorm.DB, uid uuid.UUID) models.UserResponse {
+	var user models.UserResponse
+
+	conn.Model(&MUser).Where("id = ?", uid).Find(&user)
+	return user
+}
+
 func CreateUser(conn *gorm.DB, payload models.UserCreatePayload) error {
-	hash_pass, err := bcrypt.GenerateFromPassword([]byte(payload.Password), bcrypt.DefaultCost)
-
-	if err != nil {
-		return err
-	}
-
 	var nuser models.User = models.User{
 		ID:        uuid.New(),
 		Username:  payload.Username,
-		Password:  string(hash_pass),
+		Password:  payload.Password,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
+	}
+
+	if err := nuser.HashPassword(); err != nil {
+		return err
 	}
 
 	if err := conn.Create(&nuser).Error; err != nil {
@@ -48,13 +52,17 @@ func CreateUser(conn *gorm.DB, payload models.UserCreatePayload) error {
 }
 
 func UpdateUser(conn *gorm.DB, uid uuid.UUID, payload models.UserUpdatePayload) error {
-	if err := conn.Model(&MUser).Where("id = ?", uid).Updates(
-		models.User{
-			Username:  payload.Username,
-			Password:  payload.Password,
-			UpdatedAt: time.Now(),
-		},
-	).Error; err != nil {
+	updatedUser := models.User{
+		Username:  payload.Username,
+		Password:  payload.Password,
+		UpdatedAt: time.Now(),
+	}
+
+	if err := updatedUser.HashPassword(); err != nil {
+		return err
+	}
+
+	if err := conn.Model(&MUser).Where("id = ?", uid).Updates(updatedUser).Error; err != nil {
 		return err
 	}
 

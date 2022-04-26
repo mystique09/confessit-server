@@ -11,26 +11,31 @@ import (
 
 func main() {
 	conn := db.ConnectDb()
-	conn.AutoMigrate(models.User{}, models.Message{})
+	conn.AutoMigrate(models.User{}, models.Message{}, models.Session{})
 
 	route := routers.Route{Conn: conn}
 
 	app := echo.New()
 	app.Use(routers.CustomLoggerMiddleware())
+	app.Use(routers.CustomCORSMiddleware())
+	//app.Use(routers.CustomCSRFMiddleware())
+	app.Use(routers.CustomRateLimitMiddleware())
 
 	app.GET("/", routers.ConfessIt)
 	app.POST("/auth", route.Login)
 	app.POST("/signup", route.Signup)
+	app.POST("/refresh", route.Refresh)
+	app.POST("/logout", route.Logout)
 
-	user_g := app.Group("/users")
+	user_g := app.Group("/users", route.AuthMiddleware)
 	{
 		user_g.GET("", route.GetUsers)
 		user_g.GET("/:name", route.GetUser)
-		user_g.PUT("/:id", route.UpdateUser)
-		user_g.DELETE("/:id", route.DeleteUser)
+		user_g.PUT("/:name", route.UpdateUser)
+		user_g.DELETE("/:name", route.DeleteUser)
 	}
 
-	message_g := app.Group("/messages")
+	message_g := app.Group("/messages", route.AuthMiddleware)
 	{
 		message_g.GET("", route.GetMessages)
 		message_g.POST("", route.CreateMessage)
@@ -38,5 +43,11 @@ func main() {
 		message_g.DELETE("/:id", route.DeleteMessage)
 	}
 
-	app.Logger.Fatal(app.Start(":" + os.Getenv("PORT")))
+	var port string = os.Getenv("PORT")
+
+	if port == "" {
+		port = "5000"
+	}
+
+	app.Logger.Fatal(app.Start(":" + port))
 }
