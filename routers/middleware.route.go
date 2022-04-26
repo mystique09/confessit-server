@@ -21,7 +21,7 @@ func CustomLoggerMiddleware() echo.MiddlewareFunc {
 
 func CustomCORSMiddleware() echo.MiddlewareFunc {
 	return middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{os.Getenv("FRONTEND_URL"), "localhost", "confessme.localhost:3000"},
+		AllowOrigins: []string{os.Getenv("FRONTEND_URL"), "confessit.vercel.app", "https://confessit.vercel.app"},
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE"},
 	})
