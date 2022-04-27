@@ -11,7 +11,7 @@ import (
 
 func main() {
 	conn := db.ConnectDb()
-	conn.AutoMigrate(models.User{}, models.Message{}, models.Session{})
+	conn.AutoMigrate(models.User{}, models.Message{})
 
 	route := routers.Route{Conn: conn}
 
@@ -24,10 +24,8 @@ func main() {
 	app.GET("/", routers.ConfessIt)
 	app.POST("/auth", route.Login)
 	app.POST("/signup", route.Signup)
-	app.POST("/refresh", route.Refresh)
-	app.POST("/logout", route.Logout)
 
-	user_g := app.Group("/users", route.AuthMiddleware)
+	user_g := app.Group("/users", routers.AuthMiddleware())
 	{
 		user_g.GET("", route.GetUsers)
 		user_g.GET("/:name", route.GetUser)
@@ -35,7 +33,7 @@ func main() {
 		user_g.DELETE("/:name", route.DeleteUser)
 	}
 
-	message_g := app.Group("/messages", route.AuthMiddleware)
+	message_g := app.Group("/messages", routers.AuthMiddleware())
 	{
 		message_g.GET("", route.GetMessages)
 		message_g.POST("", route.CreateMessage)
