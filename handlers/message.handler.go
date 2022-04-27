@@ -41,8 +41,8 @@ func CreateMessage(conn *gorm.DB, payload models.MessageCreatePayload) error {
 	return nil
 }
 
-func DeleteMessage(conn *gorm.DB, uid uuid.UUID) error {
-	if err := conn.Delete(&MMessage, "id = ?", uid).Error; err != nil {
+func DeleteMessage(conn *gorm.DB, uid uuid.UUID, to string) error {
+	if err := conn.Delete(&MMessage, `id = ? AND "to" = ?`, uid, to).Error; err != nil {
 		return err
 	}
 
