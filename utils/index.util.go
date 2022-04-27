@@ -43,3 +43,24 @@ type JwtClaims struct {
 	Payload models.JwtUserPayload `json:"payload"`
 	jwt.StandardClaims
 }
+
+type Response struct {
+	Status  string      `json:"status"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
+}
+
+func NewResponse(message string, data interface{}) Response {
+	return Response{
+		Status:  "success",
+		Message: message,
+		Data:    data,
+	}
+}
+
+func NewError(message string) Response {
+	return Response{
+		Status:  "error",
+		Message: message,
+	}
+}
