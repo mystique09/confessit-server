@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
 )
 
 func CreateCookie(name string, value string, maxAge int) http.Cookie {
@@ -27,20 +28,29 @@ func CreateCookie(name string, value string, maxAge int) http.Cookie {
 }
 
 func CreateJwt(payload models.JwtUserPayload) (string, error) {
-	var claims JwtClaims = JwtClaims{
-		payload,
+	claims := &JwtClaims{
+		payload.Id,
+		payload.Username,
 		jwt.StandardClaims{
 			Id:        payload.Id.String(),
+			Issuer:    payload.Username,
 			ExpiresAt: time.Now().Add(10 * time.Minute).Unix(),
 		},
 	}
 
-	raw_token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
+	raw_token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return raw_token.SignedString([]byte(os.Getenv("SECRET_KEY")))
 }
 
+func GetPayloadUsername(user *jwt.Token) string {
+	var claims jwt.MapClaims = user.Claims.(jwt.MapClaims)
+	username := claims["username"]
+	return username.(string)
+}
+
 type JwtClaims struct {
-	Payload models.JwtUserPayload `json:"payload"`
+	Id       uuid.UUID `json:"id"`
+	Username string    `json:"username"`
 	jwt.StandardClaims
 }
 
