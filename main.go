@@ -24,6 +24,7 @@ func main() {
 	app.GET("/", routers.ConfessIt)
 	app.POST("/auth", route.Login)
 	app.POST("/signup", route.Signup)
+	app.POST("/confess", route.CreateMessage)
 
 	user_g := app.Group("/users", routers.AuthMiddleware())
 	{
@@ -36,7 +37,6 @@ func main() {
 	message_g := app.Group("/messages", routers.AuthMiddleware())
 	{
 		message_g.GET("", route.GetMessages)
-		message_g.POST("", route.CreateMessage)
 		//message_g.GET("/:name", route.GetMessage)
 		message_g.DELETE("", route.DeleteMessage)
 	}
