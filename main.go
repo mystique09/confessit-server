@@ -25,11 +25,12 @@ func main() {
 	app.POST("/auth", route.Login)
 	app.POST("/signup", route.Signup)
 	app.POST("/confess", route.CreateMessage)
+	app.GET("/public/users", route.GetUsers)
+	app.GET("/public/users/:name", route.GetUser)
 
 	user_g := app.Group("/users", routers.AuthMiddleware())
 	{
-		user_g.GET("", route.GetUsers)
-		user_g.GET("/:name", route.GetUser)
+		user_g.GET("/profile", route.GetUserById)
 		user_g.PUT("/:name", route.UpdateUser)
 		user_g.DELETE("/:name", route.DeleteUser)
 	}

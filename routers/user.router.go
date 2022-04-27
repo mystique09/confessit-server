@@ -6,6 +6,7 @@ import (
 	"confessit/utils"
 	"net/http"
 
+	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
@@ -31,6 +32,15 @@ func (r *Route) GetUser(c echo.Context) error {
 	if user.Username == "" || user.ID == uuid.Nil {
 		return c.JSON(http.StatusBadRequest, NewError("user does not exist."))
 	}
+
+	return c.JSON(http.StatusOK, NewResponse("One user", user.ToResponse()))
+}
+
+func (r *Route) GetUserById(c echo.Context) error {
+	user_token := c.Get("user").(*jwt.Token)
+	username := utils.GetPayloadUsername(user_token)
+
+	user := handlers.GetUser(r.Conn, username)
 
 	return c.JSON(http.StatusOK, NewResponse("One user", user.ToResponse()))
 }
