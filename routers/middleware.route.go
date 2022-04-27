@@ -33,7 +33,7 @@ func CustomRateLimitMiddleware() echo.MiddlewareFunc {
 
 func AuthMiddleware() echo.MiddlewareFunc {
 	return middleware.JWTWithConfig(middleware.JWTConfig{
-		SigningMethod: "HS512",
+		SigningMethod: "HS256",
 		SigningKey:    []byte(os.Getenv("SECRET_KEY")),
 	})
 }
