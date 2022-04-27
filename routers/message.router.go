@@ -3,19 +3,18 @@ package routers
 import (
 	"confessit/handlers"
 	"confessit/models"
+	"confessit/utils"
 	"net/http"
 
+	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 )
 
 func (r *Route) GetMessages(c echo.Context) error {
-	var payload models.MessagePayload
+	user := c.Get("user").(*jwt.Token)
+	username := utils.GetPayloadUsername(user)
 
-	if err := (&echo.DefaultBinder{}).BindBody(c, &payload); err != nil {
-		return c.JSON(http.StatusBadRequest, NewError(err.Error()))
-	}
-
-	messages := handlers.GetMessages(r.Conn, payload.To)
+	messages := handlers.GetMessages(r.Conn, username)
 	return c.JSON(http.StatusOK, NewResponse("All messages", messages))
 }
 
@@ -38,13 +37,16 @@ func (r *Route) CreateMessage(c echo.Context) error {
 }
 
 func (r *Route) DeleteMessage(c echo.Context) error {
+	user := c.Get("user").(*jwt.Token)
+	username := utils.GetPayloadUsername(user)
+
 	var payload models.MessageDeletePayload
 
 	if err := (&echo.DefaultBinder{}).BindBody(c, &payload); err != nil {
 		return c.JSON(http.StatusBadRequest, NewError(err.Error()))
 	}
 
-	if err := handlers.DeleteMessage(r.Conn, payload.ID); err != nil {
+	if err := handlers.DeleteMessage(r.Conn, payload.ID, username); err != nil {
 		return c.JSON(http.StatusBadRequest, NewError(err.Error()))
 	}
 
