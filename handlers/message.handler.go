@@ -4,6 +4,7 @@ import (
 	"confessit/models"
 	"time"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -12,7 +13,7 @@ var MMessage = models.Message{}
 func GetMessages(conn *gorm.DB, uname string) []models.Message {
 	var messages []models.Message
 
-	conn.Model(&MMessage).Where("to = ?", uname).Find(&messages)
+	conn.Model(&MMessage).Where(`"to" = ?`, uname).Scan(&messages)
 
 	return messages
 }
@@ -26,9 +27,8 @@ func GetMessage(conn *gorm.DB, uname string) models.Message {
 }
 
 func CreateMessage(conn *gorm.DB, payload models.MessageCreatePayload) error {
-	var total_message = GetMessages(conn, payload.To)
 	var nmessage models.Message = models.Message{
-		ID:        uint32(len(total_message) + 1),
+		ID:        uuid.New(),
 		To:        payload.To,
 		Message:   payload.Message,
 		CreatedAt: time.Now(),
@@ -41,7 +41,7 @@ func CreateMessage(conn *gorm.DB, payload models.MessageCreatePayload) error {
 	return nil
 }
 
-func DeleteMessage(conn *gorm.DB, uid uint32) error {
+func DeleteMessage(conn *gorm.DB, uid uuid.UUID) error {
 	if err := conn.Delete(&MMessage, "id = ?", uid).Error; err != nil {
 		return err
 	}

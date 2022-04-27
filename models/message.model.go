@@ -1,13 +1,20 @@
 package models
 
-import "time"
+import (
+	"github.com/google/uuid"
+	"time"
+)
 
 type Message struct {
-	ID        uint32    `json:"id" gorm:"primaryKey"`
+	ID        uuid.UUID `json:"id" gorm:"primaryKey"`
 	To        string    `json:"to"`
 	Message   string    `json:"message"`
 	CreatedAt time.Time `json:"created_at"`
 	DeletedAt time.Time `json:"deleted_at" gorm:"index"`
+}
+
+type MessagePayload struct {
+	To string `json:"to" validate:"required"`
 }
 
 type MessageCreatePayload struct {
@@ -16,5 +23,5 @@ type MessageCreatePayload struct {
 }
 
 type MessageDeletePayload struct {
-	ID int `json:"id" validate:"required,numeric"`
+	ID uuid.UUID `json:"id" validate:"required"`
 }

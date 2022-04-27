@@ -16,45 +16,45 @@ func (r *Route) Signup(c echo.Context) error {
 	var payload models.UserCreatePayload
 
 	if err := (&echo.DefaultBinder{}).BindBody(c, &payload); err != nil {
-		return c.JSON(http.StatusBadRequest, err.Error())
+		return c.JSON(http.StatusBadRequest, NewError(err.Error()))
 	}
 
 	if err := validate.Struct(payload); err != nil {
-		return c.JSON(http.StatusBadRequest, err.Error())
+		return c.JSON(http.StatusBadRequest, NewError(err.Error()))
 	}
 
 	hasUser := handlers.GetUser(r.Conn, payload.Username)
 
 	if hasUser.Username != "" {
-		return c.JSON(http.StatusBadRequest, "user already exist.")
+		return c.JSON(http.StatusBadRequest, NewError("user already exist."))
 	}
 
 	if err := handlers.CreateUser(r.Conn, payload); err != nil {
-		return c.JSON(http.StatusBadRequest, err)
+		return c.JSON(http.StatusBadRequest, NewError(err.Error()))
 	}
 
-	return c.JSON(http.StatusCreated, "New user created.")
+	return c.JSON(http.StatusCreated, NewResponse("New user created.", payload))
 }
 
 func (r *Route) Login(c echo.Context) error {
 	var payload models.UserLoginPayload
 
 	if err := (&echo.DefaultBinder{}).BindBody(c, &payload); err != nil {
-		return c.JSON(http.StatusBadRequest, err.Error())
+		return c.JSON(http.StatusBadRequest, NewError(err.Error()))
 	}
 
 	if err := validate.Struct(payload); err != nil {
-		return c.JSON(http.StatusBadRequest, err.Error())
+		return c.JSON(http.StatusBadRequest, NewError(err.Error()))
 	}
 
 	hasUser := handlers.GetUser(r.Conn, payload.Username)
 
 	if hasUser.Username == "" {
-		return c.JSON(http.StatusUnauthorized, "user does not exist.")
+		return c.JSON(http.StatusUnauthorized, NewError("user does not exist."))
 	}
 
 	if err := hasUser.ValidatePassword(payload.Password); err != nil {
-		return c.JSON(http.StatusUnauthorized, "password mismatch.")
+		return c.JSON(http.StatusUnauthorized, NewError("password mismatch."))
 	}
 
 	token, err := utils.CreateJwt(models.JwtUserPayload{
@@ -63,8 +63,8 @@ func (r *Route) Login(c echo.Context) error {
 	})
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, err)
+		return c.JSON(http.StatusBadRequest, NewError(err.Error()))
 	}
 
-	return c.JSON(http.StatusOK, token)
+	return c.JSON(http.StatusOK, NewResponse("Login success", token))
 }

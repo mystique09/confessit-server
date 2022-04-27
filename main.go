@@ -37,8 +37,8 @@ func main() {
 	{
 		message_g.GET("", route.GetMessages)
 		message_g.POST("", route.CreateMessage)
-		message_g.GET("/:name", route.GetMessage)
-		message_g.DELETE("/:id", route.DeleteMessage)
+		//message_g.GET("/:name", route.GetMessage)
+		message_g.DELETE("", route.DeleteMessage)
 	}
 
 	var port string = os.Getenv("PORT")
