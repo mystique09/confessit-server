@@ -35,7 +35,7 @@ type Session struct {
 type User struct {
 	ID        uuid.UUID    `json:"id"`
 	Username  string       `json:"username"`
-	Password  string       `json:"password"`
+	Password  string       `json:"-"`
 	CreatedAt sql.NullTime `json:"created_at"`
 	UpdatedAt sql.NullTime `json:"updated_at"`
 }

@@ -16,7 +16,7 @@ INSERT INTO "user" (
     id, username, password
 ) VALUES (
     $1, $2, $3
-) RETURNING id, username, password, created_at, updated_at
+) RETURNING id
 `
 
 type CreateUserParams struct {
@@ -25,17 +25,11 @@ type CreateUserParams struct {
 	Password string    `json:"password"`
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (uuid.UUID, error) {
 	row := q.queryRow(ctx, q.createUserStmt, createUser, arg.ID, arg.Username, arg.Password)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Username,
-		&i.Password,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
 }
 
 const deleteOneUser = `-- name: DeleteOneUser :one

@@ -14,7 +14,7 @@ type Querier interface {
 	BlockSession(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 	CreateMessage(ctx context.Context, arg CreateMessageParams) (Message, error)
 	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
-	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	CreateUser(ctx context.Context, arg CreateUserParams) (uuid.UUID, error)
 	DeleteOneMessage(ctx context.Context, arg DeleteOneMessageParams) (uuid.UUID, error)
 	DeleteOneUser(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 	DeleteSession(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
