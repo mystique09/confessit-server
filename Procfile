@@ -1,1 +1,1 @@
-web: bin/confessit
+web: ./out
