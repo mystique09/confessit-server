@@ -90,7 +90,7 @@ func (s *Server) setupRouter() {
 	users.GET("", s.listUsers)
 	users.GET("/:id", s.getUserById)
 	users.POST("", s.createUser)
-	users.PUT("/:id", s.updateUser)
+	users.PATCH("/:id", s.updateUser)
 	users.DELETE("/:id", s.deleteUser)
 
 	messages := e.Group("/api/v1/messages", s.authMiddleware)
