@@ -1,6 +1,6 @@
 CREATE TABLE "user" (
   "id" uuid UNIQUE PRIMARY KEY NOT NULL,
-  "username" varchar NOT NULL,
+  "username" varchar UNIQUE NOT NULL,
   "password" varchar NOT NULL,
   "created_at" date DEFAULT (now()),
   "updated_at" date DEFAULT (now())
