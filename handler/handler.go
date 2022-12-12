@@ -2,6 +2,7 @@ package handler
 
 import (
 	db "cnfs/db/sqlc"
+	"cnfs/token"
 	"cnfs/utils"
 	"log"
 	"net/http"
@@ -16,9 +17,10 @@ import (
 
 type (
 	Server struct {
-		cfg    *config.Config
-		router *echo.Echo
-		store  db.Store
+		cfg        *config.Config
+		router     *echo.Echo
+		store      db.Store
+		tokenMaker token.Maker
 	}
 
 	CustomValidator struct {
@@ -45,13 +47,19 @@ func Launch(cfg *config.Config) {
 }
 
 func NewServer(store db.Store, cfg *config.Config) (*Server, error) {
+
+	tokenMaker, err := token.NewPasetoMaker(cfg.PasetoSymmetricKey)
+	if err != nil {
+		log.Fatalf("cannot make token maker: %s", err.Error())
+	}
+
 	server := &Server{
-		cfg:   cfg,
-		store: store,
+		cfg:        cfg,
+		store:      store,
+		tokenMaker: tokenMaker,
 	}
 
 	server.setupRouter()
-
 	return server, nil
 }
 
@@ -61,7 +69,9 @@ func (s *Server) setupRouter() {
 
 	logger := zerolog.New(os.Stdout)
 
-	e.Use(loggerMiddleware(&logger))
+	e.Use(s.loggerMiddleware(&logger))
+	e.Use(s.corsMiddleware())
+	e.Use(s.rateLimitMiddleware(20))
 
 	e.GET("/", func(c echo.Context) error {
 		return c.String(200, "CNFS server, running on Echo v4.")
@@ -76,14 +86,14 @@ func (s *Server) setupRouter() {
 	auth.POST("/refresh", s.refreshAccessToken)
 	auth.POST("/validate", s.validateAccessToken)
 
-	users := e.Group("/api/v1/users")
+	users := e.Group("/api/v1/users", s.authMiddleware)
 	users.GET("", s.listUsers)
 	users.GET("/:id", s.getUserById)
 	users.POST("", s.createUser)
 	users.PUT("/:id", s.updateUser)
 	users.DELETE("/:id", s.deleteUser)
 
-	messages := e.Group("/api/v1/messages")
+	messages := e.Group("/api/v1/messages", s.authMiddleware)
 	messages.GET("", s.listMessages)
 	messages.GET("/:id", s.getMessageById)
 	messages.POST("", s.createMessage)
