@@ -36,7 +36,7 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 func Launch(cfg *config.Config) {
 	conn := utils.SetupDb(cfg.DatabaseUrl)
 	store := db.NewStore(conn, cfg)
-	server, err := NewServer(&store, cfg)
+	server, err := NewServer(store, cfg)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -44,10 +44,10 @@ func Launch(cfg *config.Config) {
 	log.Fatal(server.router.Start(cfg.Host))
 }
 
-func NewServer(store *db.Store, cfg *config.Config) (*Server, error) {
+func NewServer(store db.Store, cfg *config.Config) (*Server, error) {
 	server := &Server{
 		cfg:   cfg,
-		store: *store,
+		store: store,
 	}
 
 	server.setupRouter()
