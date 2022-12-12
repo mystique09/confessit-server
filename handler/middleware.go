@@ -54,6 +54,11 @@ const (
 
 func (s *Server) authMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
+
+		if strings.Contains(c.Request().URL.Path, "users") {
+			return next(c)
+		}
+
 		authorizationHeader := c.Request().Header.Get(authorizationHeaderKey)
 		if authorizationHeader == "" {
 			return c.JSON(http.StatusUnauthorized, newError("authorization header is missing"))
