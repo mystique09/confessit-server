@@ -21,7 +21,7 @@ INSERT INTO "user" (
     id, username, password
 ) VALUES (
     $1, $2, $3
-) RETURNING *;
+) RETURNING id;
 
 -- name: UpdateUsername :one
 UPDATE "user"
