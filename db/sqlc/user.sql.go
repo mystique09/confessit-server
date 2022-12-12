@@ -11,15 +11,74 @@ import (
 	"github.com/google/uuid"
 )
 
-const getUser = `-- name: GetUser :one
+const createUser = `-- name: CreateUser :one
+INSERT INTO "user" (
+    id, username, password
+) VALUES (
+    $1, $2, $3
+) RETURNING id, username, password, created_at, updated_at
+`
+
+type CreateUserParams struct {
+	ID       uuid.UUID `json:"id"`
+	Username string    `json:"username"`
+	Password string    `json:"password"`
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
+	row := q.queryRow(ctx, q.createUserStmt, createUser, arg.ID, arg.Username, arg.Password)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Password,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const deleteOneUser = `-- name: DeleteOneUser :one
+DELETE FROM "user"
+WHERE id = $1
+RETURNING id
+`
+
+func (q *Queries) DeleteOneUser(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
+	row := q.queryRow(ctx, q.deleteOneUserStmt, deleteOneUser, id)
+	err := row.Scan(&id)
+	return id, err
+}
+
+const getUserById = `-- name: GetUserById :one
 SELECT id, username, password, created_at, updated_at
 FROM "user"
 WHERE id = $1
 LIMIT 1
 `
 
-func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (User, error) {
-	row := q.queryRow(ctx, q.getUserStmt, getUser, id)
+func (q *Queries) GetUserById(ctx context.Context, id uuid.UUID) (User, error) {
+	row := q.queryRow(ctx, q.getUserByIdStmt, getUserById, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Password,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getUserByUsername = `-- name: GetUserByUsername :one
+SELECT id, username, password, created_at, updated_at
+FROM "user"
+WHERE username = $1
+LIMIT 1
+`
+
+func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
+	row := q.queryRow(ctx, q.getUserByUsernameStmt, getUserByUsername, username)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -65,4 +124,23 @@ func (q *Queries) ListUsers(ctx context.Context, offset int32) ([]User, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateUsername = `-- name: UpdateUsername :one
+UPDATE "user"
+SET username = $1
+WHERE id = $2
+RETURNING id
+`
+
+type UpdateUsernameParams struct {
+	Username string    `json:"username"`
+	ID       uuid.UUID `json:"id"`
+}
+
+func (q *Queries) UpdateUsername(ctx context.Context, arg UpdateUsernameParams) (uuid.UUID, error) {
+	row := q.queryRow(ctx, q.updateUsernameStmt, updateUsername, arg.Username, arg.ID)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
 }

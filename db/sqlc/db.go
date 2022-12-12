@@ -24,25 +24,129 @@ func New(db DBTX) *Queries {
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
-	if q.getUserStmt, err = db.PrepareContext(ctx, getUser); err != nil {
-		return nil, fmt.Errorf("error preparing query GetUser: %w", err)
+	if q.blockSessionStmt, err = db.PrepareContext(ctx, blockSession); err != nil {
+		return nil, fmt.Errorf("error preparing query BlockSession: %w", err)
+	}
+	if q.createMessageStmt, err = db.PrepareContext(ctx, createMessage); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateMessage: %w", err)
+	}
+	if q.createSessionStmt, err = db.PrepareContext(ctx, createSession); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateSession: %w", err)
+	}
+	if q.createUserStmt, err = db.PrepareContext(ctx, createUser); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateUser: %w", err)
+	}
+	if q.deleteOneMessageStmt, err = db.PrepareContext(ctx, deleteOneMessage); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteOneMessage: %w", err)
+	}
+	if q.deleteOneUserStmt, err = db.PrepareContext(ctx, deleteOneUser); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteOneUser: %w", err)
+	}
+	if q.deleteSessionStmt, err = db.PrepareContext(ctx, deleteSession); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteSession: %w", err)
+	}
+	if q.getMessageByIdStmt, err = db.PrepareContext(ctx, getMessageById); err != nil {
+		return nil, fmt.Errorf("error preparing query GetMessageById: %w", err)
+	}
+	if q.getSessionByIdStmt, err = db.PrepareContext(ctx, getSessionById); err != nil {
+		return nil, fmt.Errorf("error preparing query GetSessionById: %w", err)
+	}
+	if q.getUserByIdStmt, err = db.PrepareContext(ctx, getUserById); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUserById: %w", err)
+	}
+	if q.getUserByUsernameStmt, err = db.PrepareContext(ctx, getUserByUsername); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUserByUsername: %w", err)
+	}
+	if q.listMessageStmt, err = db.PrepareContext(ctx, listMessage); err != nil {
+		return nil, fmt.Errorf("error preparing query ListMessage: %w", err)
 	}
 	if q.listUsersStmt, err = db.PrepareContext(ctx, listUsers); err != nil {
 		return nil, fmt.Errorf("error preparing query ListUsers: %w", err)
+	}
+	if q.updateMessageStatusStmt, err = db.PrepareContext(ctx, updateMessageStatus); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateMessageStatus: %w", err)
+	}
+	if q.updateUsernameStmt, err = db.PrepareContext(ctx, updateUsername); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateUsername: %w", err)
 	}
 	return &q, nil
 }
 
 func (q *Queries) Close() error {
 	var err error
-	if q.getUserStmt != nil {
-		if cerr := q.getUserStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getUserStmt: %w", cerr)
+	if q.blockSessionStmt != nil {
+		if cerr := q.blockSessionStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing blockSessionStmt: %w", cerr)
+		}
+	}
+	if q.createMessageStmt != nil {
+		if cerr := q.createMessageStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createMessageStmt: %w", cerr)
+		}
+	}
+	if q.createSessionStmt != nil {
+		if cerr := q.createSessionStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createSessionStmt: %w", cerr)
+		}
+	}
+	if q.createUserStmt != nil {
+		if cerr := q.createUserStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createUserStmt: %w", cerr)
+		}
+	}
+	if q.deleteOneMessageStmt != nil {
+		if cerr := q.deleteOneMessageStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteOneMessageStmt: %w", cerr)
+		}
+	}
+	if q.deleteOneUserStmt != nil {
+		if cerr := q.deleteOneUserStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteOneUserStmt: %w", cerr)
+		}
+	}
+	if q.deleteSessionStmt != nil {
+		if cerr := q.deleteSessionStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteSessionStmt: %w", cerr)
+		}
+	}
+	if q.getMessageByIdStmt != nil {
+		if cerr := q.getMessageByIdStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getMessageByIdStmt: %w", cerr)
+		}
+	}
+	if q.getSessionByIdStmt != nil {
+		if cerr := q.getSessionByIdStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getSessionByIdStmt: %w", cerr)
+		}
+	}
+	if q.getUserByIdStmt != nil {
+		if cerr := q.getUserByIdStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUserByIdStmt: %w", cerr)
+		}
+	}
+	if q.getUserByUsernameStmt != nil {
+		if cerr := q.getUserByUsernameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUserByUsernameStmt: %w", cerr)
+		}
+	}
+	if q.listMessageStmt != nil {
+		if cerr := q.listMessageStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listMessageStmt: %w", cerr)
 		}
 	}
 	if q.listUsersStmt != nil {
 		if cerr := q.listUsersStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listUsersStmt: %w", cerr)
+		}
+	}
+	if q.updateMessageStatusStmt != nil {
+		if cerr := q.updateMessageStatusStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateMessageStatusStmt: %w", cerr)
+		}
+	}
+	if q.updateUsernameStmt != nil {
+		if cerr := q.updateUsernameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateUsernameStmt: %w", cerr)
 		}
 	}
 	return err
@@ -82,17 +186,43 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db            DBTX
-	tx            *sql.Tx
-	getUserStmt   *sql.Stmt
-	listUsersStmt *sql.Stmt
+	db                      DBTX
+	tx                      *sql.Tx
+	blockSessionStmt        *sql.Stmt
+	createMessageStmt       *sql.Stmt
+	createSessionStmt       *sql.Stmt
+	createUserStmt          *sql.Stmt
+	deleteOneMessageStmt    *sql.Stmt
+	deleteOneUserStmt       *sql.Stmt
+	deleteSessionStmt       *sql.Stmt
+	getMessageByIdStmt      *sql.Stmt
+	getSessionByIdStmt      *sql.Stmt
+	getUserByIdStmt         *sql.Stmt
+	getUserByUsernameStmt   *sql.Stmt
+	listMessageStmt         *sql.Stmt
+	listUsersStmt           *sql.Stmt
+	updateMessageStatusStmt *sql.Stmt
+	updateUsernameStmt      *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:            tx,
-		tx:            tx,
-		getUserStmt:   q.getUserStmt,
-		listUsersStmt: q.listUsersStmt,
+		db:                      tx,
+		tx:                      tx,
+		blockSessionStmt:        q.blockSessionStmt,
+		createMessageStmt:       q.createMessageStmt,
+		createSessionStmt:       q.createSessionStmt,
+		createUserStmt:          q.createUserStmt,
+		deleteOneMessageStmt:    q.deleteOneMessageStmt,
+		deleteOneUserStmt:       q.deleteOneUserStmt,
+		deleteSessionStmt:       q.deleteSessionStmt,
+		getMessageByIdStmt:      q.getMessageByIdStmt,
+		getSessionByIdStmt:      q.getSessionByIdStmt,
+		getUserByIdStmt:         q.getUserByIdStmt,
+		getUserByUsernameStmt:   q.getUserByUsernameStmt,
+		listMessageStmt:         q.listMessageStmt,
+		listUsersStmt:           q.listUsersStmt,
+		updateMessageStatusStmt: q.updateMessageStatusStmt,
+		updateUsernameStmt:      q.updateUsernameStmt,
 	}
 }
