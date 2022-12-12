@@ -35,7 +35,7 @@ func (s *Server) loginUser(c echo.Context) error {
 	}
 
 	if err := c.Validate(&data); err != nil {
-		return c.JSON(http.StatusBadRequest, newError(err.Error()))
+		return c.JSON(http.StatusBadRequest, err)
 	}
 
 	user, err := s.store.GetUserByUsername(c.Request().Context(), data.Username)
