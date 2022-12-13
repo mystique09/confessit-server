@@ -29,6 +29,12 @@ SET username = $1
 WHERE id = $2
 RETURNING id;
 
+-- name: UpdateUserPassword :one
+UPDATE "user"
+SET password = $1
+WHERE id = $2
+RETURNING id;
+
 -- name: DeleteOneUser :one
 DELETE FROM "user"
 WHERE id = $1
