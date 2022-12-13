@@ -86,12 +86,12 @@ func (s *Server) setupRouter() {
 	auth.POST("/refresh", s.refreshAccessToken)
 	auth.POST("/validate", s.validateAccessToken)
 
-	users := e.Group("/api/v1/users", s.authMiddleware)
-	users.GET("", s.listUsers)
-	users.GET("/:id", s.getUserById)
+	users := e.Group("/api/v1/users")
+	users.GET("", s.listUsers, s.authMiddleware)
 	users.POST("", s.createUser)
-	users.PATCH("/:id", s.updateUser)
-	users.DELETE("/:id", s.deleteUser)
+	users.GET("/:id", s.getUserById, s.authMiddleware)
+	users.PATCH("/:id", s.updateUser, s.authMiddleware)
+	users.DELETE("/:id", s.deleteUser, s.authMiddleware)
 
 	messages := e.Group("/api/v1/messages", s.authMiddleware)
 	messages.GET("", s.listMessages)
