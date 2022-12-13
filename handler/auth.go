@@ -55,7 +55,7 @@ func (s *Server) loginUser(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, newError(err.Error()))
 	}
 
-	refreshToken, refreshTokenPayload, err := s.tokenMaker.CreateToken(user.ID, user.Username, s.cfg.AccessTokenDuration)
+	refreshToken, refreshTokenPayload, err := s.tokenMaker.CreateToken(user.ID, user.Username, s.cfg.RefreshTokenDuration)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, newError(err.Error()))
 	}
