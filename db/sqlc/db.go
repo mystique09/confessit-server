@@ -45,6 +45,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteSessionStmt, err = db.PrepareContext(ctx, deleteSession); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteSession: %w", err)
 	}
+	if q.deleteSessionByUserIdStmt, err = db.PrepareContext(ctx, deleteSessionByUserId); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteSessionByUserId: %w", err)
+	}
 	if q.getMessageByIdStmt, err = db.PrepareContext(ctx, getMessageById); err != nil {
 		return nil, fmt.Errorf("error preparing query GetMessageById: %w", err)
 	}
@@ -65,6 +68,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.updateMessageStatusStmt, err = db.PrepareContext(ctx, updateMessageStatus); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateMessageStatus: %w", err)
+	}
+	if q.updateUserPasswordStmt, err = db.PrepareContext(ctx, updateUserPassword); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateUserPassword: %w", err)
 	}
 	if q.updateUsernameStmt, err = db.PrepareContext(ctx, updateUsername); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateUsername: %w", err)
@@ -109,6 +115,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteSessionStmt: %w", cerr)
 		}
 	}
+	if q.deleteSessionByUserIdStmt != nil {
+		if cerr := q.deleteSessionByUserIdStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteSessionByUserIdStmt: %w", cerr)
+		}
+	}
 	if q.getMessageByIdStmt != nil {
 		if cerr := q.getMessageByIdStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getMessageByIdStmt: %w", cerr)
@@ -142,6 +153,11 @@ func (q *Queries) Close() error {
 	if q.updateMessageStatusStmt != nil {
 		if cerr := q.updateMessageStatusStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateMessageStatusStmt: %w", cerr)
+		}
+	}
+	if q.updateUserPasswordStmt != nil {
+		if cerr := q.updateUserPasswordStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateUserPasswordStmt: %w", cerr)
 		}
 	}
 	if q.updateUsernameStmt != nil {
@@ -186,43 +202,47 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db                      DBTX
-	tx                      *sql.Tx
-	blockSessionStmt        *sql.Stmt
-	createMessageStmt       *sql.Stmt
-	createSessionStmt       *sql.Stmt
-	createUserStmt          *sql.Stmt
-	deleteOneMessageStmt    *sql.Stmt
-	deleteOneUserStmt       *sql.Stmt
-	deleteSessionStmt       *sql.Stmt
-	getMessageByIdStmt      *sql.Stmt
-	getSessionByIdStmt      *sql.Stmt
-	getUserByIdStmt         *sql.Stmt
-	getUserByUsernameStmt   *sql.Stmt
-	listMessageStmt         *sql.Stmt
-	listUsersStmt           *sql.Stmt
-	updateMessageStatusStmt *sql.Stmt
-	updateUsernameStmt      *sql.Stmt
+	db                        DBTX
+	tx                        *sql.Tx
+	blockSessionStmt          *sql.Stmt
+	createMessageStmt         *sql.Stmt
+	createSessionStmt         *sql.Stmt
+	createUserStmt            *sql.Stmt
+	deleteOneMessageStmt      *sql.Stmt
+	deleteOneUserStmt         *sql.Stmt
+	deleteSessionStmt         *sql.Stmt
+	deleteSessionByUserIdStmt *sql.Stmt
+	getMessageByIdStmt        *sql.Stmt
+	getSessionByIdStmt        *sql.Stmt
+	getUserByIdStmt           *sql.Stmt
+	getUserByUsernameStmt     *sql.Stmt
+	listMessageStmt           *sql.Stmt
+	listUsersStmt             *sql.Stmt
+	updateMessageStatusStmt   *sql.Stmt
+	updateUserPasswordStmt    *sql.Stmt
+	updateUsernameStmt        *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:                      tx,
-		tx:                      tx,
-		blockSessionStmt:        q.blockSessionStmt,
-		createMessageStmt:       q.createMessageStmt,
-		createSessionStmt:       q.createSessionStmt,
-		createUserStmt:          q.createUserStmt,
-		deleteOneMessageStmt:    q.deleteOneMessageStmt,
-		deleteOneUserStmt:       q.deleteOneUserStmt,
-		deleteSessionStmt:       q.deleteSessionStmt,
-		getMessageByIdStmt:      q.getMessageByIdStmt,
-		getSessionByIdStmt:      q.getSessionByIdStmt,
-		getUserByIdStmt:         q.getUserByIdStmt,
-		getUserByUsernameStmt:   q.getUserByUsernameStmt,
-		listMessageStmt:         q.listMessageStmt,
-		listUsersStmt:           q.listUsersStmt,
-		updateMessageStatusStmt: q.updateMessageStatusStmt,
-		updateUsernameStmt:      q.updateUsernameStmt,
+		db:                        tx,
+		tx:                        tx,
+		blockSessionStmt:          q.blockSessionStmt,
+		createMessageStmt:         q.createMessageStmt,
+		createSessionStmt:         q.createSessionStmt,
+		createUserStmt:            q.createUserStmt,
+		deleteOneMessageStmt:      q.deleteOneMessageStmt,
+		deleteOneUserStmt:         q.deleteOneUserStmt,
+		deleteSessionStmt:         q.deleteSessionStmt,
+		deleteSessionByUserIdStmt: q.deleteSessionByUserIdStmt,
+		getMessageByIdStmt:        q.getMessageByIdStmt,
+		getSessionByIdStmt:        q.getSessionByIdStmt,
+		getUserByIdStmt:           q.getUserByIdStmt,
+		getUserByUsernameStmt:     q.getUserByUsernameStmt,
+		listMessageStmt:           q.listMessageStmt,
+		listUsersStmt:             q.listUsersStmt,
+		updateMessageStatusStmt:   q.updateMessageStatusStmt,
+		updateUserPasswordStmt:    q.updateUserPasswordStmt,
+		updateUsernameStmt:        q.updateUsernameStmt,
 	}
 }

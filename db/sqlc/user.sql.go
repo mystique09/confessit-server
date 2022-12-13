@@ -120,6 +120,25 @@ func (q *Queries) ListUsers(ctx context.Context, offset int32) ([]User, error) {
 	return items, nil
 }
 
+const updateUserPassword = `-- name: UpdateUserPassword :one
+UPDATE "user"
+SET password = $1
+WHERE id = $2
+RETURNING id
+`
+
+type UpdateUserPasswordParams struct {
+	Password string    `json:"password"`
+	ID       uuid.UUID `json:"id"`
+}
+
+func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (uuid.UUID, error) {
+	row := q.queryRow(ctx, q.updateUserPasswordStmt, updateUserPassword, arg.Password, arg.ID)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
 const updateUsername = `-- name: UpdateUsername :one
 UPDATE "user"
 SET username = $1

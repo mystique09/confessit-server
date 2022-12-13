@@ -89,6 +89,19 @@ func (q *Queries) DeleteSession(ctx context.Context, id uuid.UUID) (uuid.UUID, e
 	return id, err
 }
 
+const deleteSessionByUserId = `-- name: DeleteSessionByUserId :one
+DELETE FROM "session"
+WHERE user_id = $1
+RETURNING id
+`
+
+func (q *Queries) DeleteSessionByUserId(ctx context.Context, userID uuid.UUID) (uuid.UUID, error) {
+	row := q.queryRow(ctx, q.deleteSessionByUserIdStmt, deleteSessionByUserId, userID)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
 const getSessionById = `-- name: GetSessionById :one
 SELECT id, user_id, username, refresh_token, user_agent, client_ip, is_blocked, created_at, expires_at
 FROM "session"

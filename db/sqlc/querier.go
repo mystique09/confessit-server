@@ -18,6 +18,7 @@ type Querier interface {
 	DeleteOneMessage(ctx context.Context, arg DeleteOneMessageParams) (uuid.UUID, error)
 	DeleteOneUser(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 	DeleteSession(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
+	DeleteSessionByUserId(ctx context.Context, userID uuid.UUID) (uuid.UUID, error)
 	GetMessageById(ctx context.Context, arg GetMessageByIdParams) (Message, error)
 	GetSessionById(ctx context.Context, id uuid.UUID) (Session, error)
 	GetUserById(ctx context.Context, id uuid.UUID) (User, error)
@@ -25,6 +26,7 @@ type Querier interface {
 	ListMessage(ctx context.Context, arg ListMessageParams) ([]Message, error)
 	ListUsers(ctx context.Context, offset int32) ([]User, error)
 	UpdateMessageStatus(ctx context.Context, arg UpdateMessageStatusParams) (uuid.UUID, error)
+	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (uuid.UUID, error)
 	UpdateUsername(ctx context.Context, arg UpdateUsernameParams) (uuid.UUID, error)
 }
 
