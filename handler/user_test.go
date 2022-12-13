@@ -176,10 +176,6 @@ func TestCreateUser(t *testing.T) {
 			req := httptest.NewRequest(http.MethodPost, "/api/v1/users", payload)
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 
-			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, cfg.AccessTokenDuration)
-			require.NoError(t, err)
-			req.Header.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", token))
-
 			server.router.ServeHTTP(rec, req)
 			tc.checkResponse(rec)
 		})
