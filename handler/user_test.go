@@ -176,6 +176,10 @@ func TestCreateUser(t *testing.T) {
 			req := httptest.NewRequest(http.MethodPost, "/api/v1/users", payload)
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 
+			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, cfg.AccessTokenDuration)
+			require.NoError(t, err)
+			req.Header.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", token))
+
 			server.router.ServeHTTP(rec, req)
 			tc.checkResponse(rec)
 		})
@@ -269,6 +273,9 @@ func TestListUsers(t *testing.T) {
 			url := fmt.Sprintf("/api/v1/users?page=%s", tc.payload)
 
 			req := httptest.NewRequest(http.MethodGet, url, nil)
+			token, _, err := server.tokenMaker.CreateToken(uuid.New(), utils.RandomString(12), cfg.AccessTokenDuration)
+			require.NoError(t, err)
+			req.Header.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", token))
 
 			server.router.ServeHTTP(rec, req)
 			tc.checkResponse(rec)
@@ -364,6 +371,252 @@ func TestGetUserById(t *testing.T) {
 			url := fmt.Sprintf("/api/v1/users/%s", tc.payload)
 
 			req := httptest.NewRequest(http.MethodGet, url, nil)
+			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, cfg.AccessTokenDuration)
+			require.NoError(t, err)
+			req.Header.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", token))
+
+			server.router.ServeHTTP(rec, req)
+			tc.checkResponse(rec)
+		})
+	}
+}
+
+type eqUpdateUserParamsMatcher struct {
+	arg      db.UpdateUserPasswordParams
+	password string
+}
+
+func (e *eqUpdateUserParamsMatcher) Matches(x interface{}) bool {
+	arg, ok := x.(db.UpdateUserPasswordParams)
+	if !ok {
+		return false
+	}
+
+	err := utils.CheckPassword([]byte(arg.Password), []byte(e.password))
+	if err != nil {
+		return false
+	}
+
+	e.arg.ID = arg.ID
+	e.arg.Password = arg.Password
+
+	return reflect.DeepEqual(e.arg, arg)
+}
+
+func (e *eqUpdateUserParamsMatcher) String() string {
+	return fmt.Sprintf("matches arg %v and id %v", e.arg, e.password)
+}
+
+func EqUpdateUserParams(arg *db.UpdateUserPasswordParams, password string) gomock.Matcher {
+	return &eqUpdateUserParamsMatcher{*arg, password}
+}
+
+func TestUpdateUser(t *testing.T) {
+	_, user := randomUser(t)
+	session_id := uuid.New()
+	newUsername := utils.RandomString(12)
+	newPassword := utils.RandomString(12)
+
+	testCases := []testCase{
+		{
+			name:    "OK-Username",
+			payload: fmt.Sprintf(`{"field": "username", "payload": %q, "session_id": %q}`, newUsername, session_id),
+			buildStubs: func(store *mock.MockStore) {
+				arg := db.UpdateUsernameParams{
+					ID:       user.ID,
+					Username: newUsername,
+				}
+
+				store.EXPECT().GetSessionById(gomock.Any(), gomock.Any()).Times(1)
+				store.EXPECT().UpdateUsername(gomock.Any(), gomock.Eq(arg)).Times(1).Return(user.ID, nil)
+				store.EXPECT().DeleteSession(gomock.Any(), gomock.Any()).Times(1)
+			},
+			checkResponse: func(rec *httptest.ResponseRecorder) {
+				require.Equal(t, 200, rec.Code)
+
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+
+				t.Log(resp.Err)
+				require.NoError(t, json.Unmarshal(body, &resp))
+				require.NotNil(t, resp.Data)
+			},
+		},
+		{
+			name:    "OK-Password",
+			payload: fmt.Sprintf(`{"field": "password", "payload": %q, "session_id": %q}`, newPassword, session_id),
+			buildStubs: func(store *mock.MockStore) {
+				hashedPass, err := utils.HashPassword(newPassword)
+				require.NoError(t, err)
+
+				arg := db.UpdateUserPasswordParams{
+					Password: hashedPass,
+					ID:       user.ID,
+				}
+				store.EXPECT().GetSessionById(gomock.Any(), gomock.Any()).Times(1)
+				store.EXPECT().UpdateUserPassword(gomock.Any(), EqUpdateUserParams(&arg, newPassword)).Times(1).Return(user.ID, nil)
+				store.EXPECT().DeleteSession(gomock.Any(), gomock.Any()).Times(1)
+			},
+			checkResponse: func(rec *httptest.ResponseRecorder) {
+				require.Equal(t, 200, rec.Code)
+
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+
+				t.Log(resp.Err)
+				require.NoError(t, json.Unmarshal(body, &resp))
+				require.NotNil(t, resp.Data)
+			},
+		},
+		{
+			name:    "Missing session ID",
+			payload: fmt.Sprintf(`{"field": "username", "payload": %q}`, newUsername),
+			buildStubs: func(store *mock.MockStore) {
+				store.EXPECT().GetSessionById(gomock.Any(), gomock.Any()).Times(0)
+			},
+			checkResponse: func(rec *httptest.ResponseRecorder) {
+				require.Equal(t, 400, rec.Code)
+			},
+		},
+		{
+			name:    "Expired session",
+			payload: fmt.Sprintf(`{"field": "username", "payload": %q, "session_id": %q}`, newUsername, session_id),
+			buildStubs: func(store *mock.MockStore) {
+				store.EXPECT().GetSessionById(gomock.Any(), gomock.Eq(session_id)).Times(1).Return(db.Session{}, sql.ErrNoRows)
+			},
+			checkResponse: func(rec *httptest.ResponseRecorder) {
+				require.Equal(t, 401, rec.Code)
+			},
+		},
+		{
+			name:    "Unknown field",
+			payload: fmt.Sprintf(`{"field": "unknown", "payload": %q, "session_id": %q}`, newUsername, session_id),
+			buildStubs: func(store *mock.MockStore) {
+				store.EXPECT().GetSessionById(gomock.Any(), gomock.Eq(session_id)).Times(0)
+			},
+			checkResponse: func(rec *httptest.ResponseRecorder) {
+				require.Equal(t, 400, rec.Code)
+			},
+		},
+	}
+
+	for i := range testCases {
+		tc := testCases[i]
+
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			store := mock.NewMockStore(ctrl)
+			tc.buildStubs(store)
+
+			server, err := NewServer(store, cfg)
+			require.NoError(t, err)
+
+			url := fmt.Sprintf("/api/v1/users/%s", user.ID)
+
+			req := httptest.NewRequest(http.MethodPatch, url, strings.NewReader(tc.payload))
+
+			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, cfg.AccessTokenDuration)
+			require.NoError(t, err)
+			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+			req.Header.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", token))
+
+			rec := httptest.NewRecorder()
+
+			server.router.ServeHTTP(rec, req)
+			tc.checkResponse(rec)
+		})
+	}
+}
+
+func TestDeleteUser(t *testing.T) {
+	_, user := randomUser(t)
+	sessionId := uuid.New()
+
+	testCases := []testCase{
+		{
+			name:    "OK",
+			payload: fmt.Sprintf(`{"session_id": %q}`, sessionId),
+			buildStubs: func(store *mock.MockStore) {
+				store.EXPECT().GetSessionById(gomock.Any(), gomock.Eq(sessionId)).Times(1)
+				store.EXPECT().DeleteOneUser(gomock.Any(), gomock.Eq(user.ID)).Times(1).Return(user.ID, nil)
+				store.EXPECT().DeleteSessionByUserId(gomock.Any(), gomock.Eq(user.ID)).Times(1)
+			},
+			checkResponse: func(rec *httptest.ResponseRecorder) {
+				require.Equal(t, 200, rec.Code)
+			},
+		},
+		{
+			name:    "Invalid session",
+			payload: fmt.Sprintf(`{"session_id": %q}`, sessionId),
+			buildStubs: func(store *mock.MockStore) {
+				store.EXPECT().GetSessionById(gomock.Any(), gomock.Eq(sessionId)).Times(1).Return(db.Session{}, sql.ErrNoRows)
+
+			},
+			checkResponse: func(rec *httptest.ResponseRecorder) {
+				require.Equal(t, 401, rec.Code)
+			},
+		},
+		{
+			name:    "Internal error",
+			payload: fmt.Sprintf(`{"session_id": %q}`, sessionId),
+			buildStubs: func(store *mock.MockStore) {
+				store.EXPECT().GetSessionById(gomock.Any(), gomock.Eq(sessionId)).Times(1).Return(db.Session{}, sql.ErrConnDone)
+
+			},
+			checkResponse: func(rec *httptest.ResponseRecorder) {
+				require.Equal(t, 500, rec.Code)
+			},
+		},
+		{
+			name:    "Missing body payload",
+			payload: "",
+			buildStubs: func(store *mock.MockStore) {
+				store.EXPECT().GetSessionById(gomock.Any(), gomock.Eq(sessionId)).Times(0)
+
+			},
+			checkResponse: func(rec *httptest.ResponseRecorder) {
+				require.Equal(t, 400, rec.Code)
+
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+
+				require.NoError(t, json.Unmarshal(body, &resp))
+				require.Contains(t, resp.Err, "SessionId", "required")
+			},
+		},
+	}
+
+	for i := range testCases {
+		tc := testCases[i]
+
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			store := mock.NewMockStore(ctrl)
+			tc.buildStubs(store)
+
+			server, err := NewServer(store, cfg)
+			require.NoError(t, err)
+
+			url := fmt.Sprintf("/api/v1/users/%s", user.ID)
+
+			req := httptest.NewRequest(http.MethodDelete, url, strings.NewReader(tc.payload))
+
+			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, cfg.AccessTokenDuration)
+			require.NoError(t, err)
+			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+			req.Header.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", token))
+
+			rec := httptest.NewRecorder()
 
 			server.router.ServeHTTP(rec, req)
 			tc.checkResponse(rec)
