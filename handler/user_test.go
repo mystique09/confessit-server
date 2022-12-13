@@ -541,7 +541,6 @@ func TestDeleteUser(t *testing.T) {
 			buildStubs: func(store *mock.MockStore) {
 				store.EXPECT().GetSessionById(gomock.Any(), gomock.Eq(sessionId)).Times(1)
 				store.EXPECT().DeleteOneUser(gomock.Any(), gomock.Eq(user.ID)).Times(1).Return(user.ID, nil)
-				store.EXPECT().DeleteSessionByUserId(gomock.Any(), gomock.Eq(user.ID)).Times(1)
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
 				require.Equal(t, 200, rec.Code)
