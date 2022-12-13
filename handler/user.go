@@ -6,6 +6,7 @@ import (
 	"cnfs/utils"
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -208,6 +209,7 @@ func (s *Server) deleteUser(c echo.Context) error {
 
 	_, err = s.store.GetSessionById(c.Request().Context(), data.SessionId)
 	if err != nil {
+		log.Println(err.Error())
 		if err == sql.ErrNoRows {
 			return c.JSON(http.StatusUnauthorized, UNAUTHORIZED)
 		}
@@ -221,19 +223,11 @@ func (s *Server) deleteUser(c echo.Context) error {
 	}
 
 	if tokenPayload.UserId != userId {
+		log.Println(tokenPayload.UserId, userId)
 		return c.JSON(http.StatusUnauthorized, UNAUTHORIZED)
 	}
 
 	user, err := s.store.DeleteOneUser(c.Request().Context(), userId)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return c.JSON(http.StatusUnauthorized, UNAUTHORIZED)
-		}
-
-		return c.JSON(http.StatusInternalServerError, INTERNAL_ERROR)
-	}
-
-	_, err = s.store.DeleteSessionByUserId(c.Request().Context(), userId)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return c.JSON(http.StatusUnauthorized, UNAUTHORIZED)
