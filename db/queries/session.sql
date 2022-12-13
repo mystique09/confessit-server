@@ -28,3 +28,8 @@ RETURNING id;
 DELETE FROM "session"
 WHERE id = $1
 RETURNING id;
+
+-- name: DeleteSessionByUserId :one
+DELETE FROM "session"
+WHERE user_id = $1
+RETURNING id;
