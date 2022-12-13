@@ -141,6 +141,21 @@ func (mr *MockStoreMockRecorder) DeleteSession(arg0, arg1 interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSession", reflect.TypeOf((*MockStore)(nil).DeleteSession), arg0, arg1)
 }
 
+// DeleteSessionByUserId mocks base method.
+func (m *MockStore) DeleteSessionByUserId(arg0 context.Context, arg1 uuid.UUID) (uuid.UUID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteSessionByUserId", arg0, arg1)
+	ret0, _ := ret[0].(uuid.UUID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteSessionByUserId indicates an expected call of DeleteSessionByUserId.
+func (mr *MockStoreMockRecorder) DeleteSessionByUserId(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSessionByUserId", reflect.TypeOf((*MockStore)(nil).DeleteSessionByUserId), arg0, arg1)
+}
+
 // GetMessageById mocks base method.
 func (m *MockStore) GetMessageById(arg0 context.Context, arg1 db.GetMessageByIdParams) (db.Message, error) {
 	m.ctrl.T.Helper()
@@ -244,6 +259,21 @@ func (m *MockStore) UpdateMessageStatus(arg0 context.Context, arg1 db.UpdateMess
 func (mr *MockStoreMockRecorder) UpdateMessageStatus(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMessageStatus", reflect.TypeOf((*MockStore)(nil).UpdateMessageStatus), arg0, arg1)
+}
+
+// UpdateUserPassword mocks base method.
+func (m *MockStore) UpdateUserPassword(arg0 context.Context, arg1 db.UpdateUserPasswordParams) (uuid.UUID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUserPassword", arg0, arg1)
+	ret0, _ := ret[0].(uuid.UUID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateUserPassword indicates an expected call of UpdateUserPassword.
+func (mr *MockStoreMockRecorder) UpdateUserPassword(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserPassword", reflect.TypeOf((*MockStore)(nil).UpdateUserPassword), arg0, arg1)
 }
 
 // UpdateUsername mocks base method.
