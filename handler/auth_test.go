@@ -53,6 +53,13 @@ func TestLogin(t *testing.T) {
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
 				require.Equal(t, 400, rec.Code)
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+				require.NoError(t, json.Unmarshal(body, &resp))
+				require.NotNil(t, resp.Err)
+				require.Empty(t, resp.Data)
 			},
 		},
 		{
@@ -63,6 +70,13 @@ func TestLogin(t *testing.T) {
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
 				require.Equal(t, 400, rec.Code)
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+				require.NoError(t, json.Unmarshal(body, &resp))
+				require.NotNil(t, resp.Err)
+				require.Empty(t, resp.Data)
 			},
 		},
 		{
@@ -73,6 +87,13 @@ func TestLogin(t *testing.T) {
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
 				require.Equal(t, 400, rec.Code)
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+				require.NoError(t, json.Unmarshal(body, &resp))
+				require.NotNil(t, resp.Err)
+				require.Empty(t, resp.Data)
 			},
 		},
 		{
