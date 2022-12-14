@@ -90,14 +90,14 @@ func (s *Server) setupRouter() {
 	users.GET("", s.listUsers, s.authMiddleware)
 	users.POST("", s.createUser)
 	users.GET("/:id", s.getUserById, s.authMiddleware)
+	users.GET("/:id/messages", s.listMessages, s.authMiddleware)
 	users.PATCH("/:id", s.updateUser, s.authMiddleware)
 	users.DELETE("/:id", s.deleteUser, s.authMiddleware)
 
-	messages := e.Group("/api/v1/messages", s.authMiddleware)
-	messages.GET("", s.listMessages)
-	messages.GET("/:id", s.getMessageById)
+	messages := e.Group("/api/v1/messages")
+	messages.GET("/:id", s.getMessageById, s.authMiddleware)
 	messages.POST("", s.createMessage)
-	messages.DELETE("/:id", s.deleteMessage)
+	messages.DELETE("/:id", s.deleteMessage, s.authMiddleware)
 
 	s.router = e
 }
