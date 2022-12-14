@@ -12,13 +12,13 @@ stop:
 	sudo docker stop $(id)
     
 migrateup:
-	migrate -path ./migrations -database $(DATABASE_URL) -verbose up
+	migrate -path ./migrations -database $(DB_URL) -verbose up
     
 migratedown:
-	migrate -path ./migrations -database $(DATABASE_URL) -verbose down
+	migrate -path ./migrations -database $(DB_URL) -verbose down
     
 migrateforce:
-	migrate -path ./migrations -database $(DATABASE_URL) -verbose force 1
+	migrate -path ./migrations -database $(DB_URL) -verbose force 1
     
 psql:
 	sudo docker exec -it pg psql $(DB_NAME)
