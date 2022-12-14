@@ -157,7 +157,7 @@ func (mr *MockStoreMockRecorder) DeleteSessionByUserId(arg0, arg1 interface{}) *
 }
 
 // GetMessageById mocks base method.
-func (m *MockStore) GetMessageById(arg0 context.Context, arg1 db.GetMessageByIdParams) (db.Message, error) {
+func (m *MockStore) GetMessageById(arg0 context.Context, arg1 uuid.UUID) (db.Message, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetMessageById", arg0, arg1)
 	ret0, _ := ret[0].(db.Message)
