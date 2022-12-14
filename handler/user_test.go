@@ -73,6 +73,13 @@ func TestCreateUser(t *testing.T) {
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
 				require.Equal(t, 200, rec.Code)
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+				require.NoError(t, json.Unmarshal(body, &resp))
+				require.NotNil(t, resp.Data)
+				require.Empty(t, resp.Err)
 			},
 		},
 		{
@@ -544,6 +551,13 @@ func TestDeleteUser(t *testing.T) {
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
 				require.Equal(t, 200, rec.Code)
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+				require.NoError(t, json.Unmarshal(body, &resp))
+				require.NotNil(t, resp.Data)
+				require.Empty(t, resp.Err)
 			},
 		},
 		{
@@ -555,6 +569,13 @@ func TestDeleteUser(t *testing.T) {
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
 				require.Equal(t, 401, rec.Code)
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+				require.NoError(t, json.Unmarshal(body, &resp))
+				require.NotNil(t, resp.Err)
+				require.Empty(t, resp.Data)
 			},
 		},
 		{
@@ -566,6 +587,13 @@ func TestDeleteUser(t *testing.T) {
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
 				require.Equal(t, 500, rec.Code)
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+				require.NoError(t, json.Unmarshal(body, &resp))
+				require.NotNil(t, resp.Err)
+				require.Empty(t, resp.Data)
 			},
 		},
 		{
