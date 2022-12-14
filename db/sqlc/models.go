@@ -12,12 +12,12 @@ import (
 )
 
 type Message struct {
-	ID         uuid.UUID      `json:"id"`
-	ReceiverID uuid.UUID      `json:"receiver_id"`
-	Content    sql.NullString `json:"content"`
-	Seen       sql.NullBool   `json:"seen"`
-	CreatedAt  sql.NullTime   `json:"created_at"`
-	UpdatedAt  sql.NullTime   `json:"updated_at"`
+	ID         uuid.UUID    `json:"id"`
+	ReceiverID uuid.UUID    `json:"receiver_id"`
+	Content    string       `json:"content"`
+	Seen       bool         `json:"seen"`
+	CreatedAt  sql.NullTime `json:"created_at"`
+	UpdatedAt  sql.NullTime `json:"updated_at"`
 }
 
 type Session struct {
