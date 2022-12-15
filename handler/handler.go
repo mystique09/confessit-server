@@ -3,7 +3,6 @@
 // # Documentation for the CNFS API.
 //
 // Schemes: http
-// Host: localhost:8000
 // BasePath: /api/v1
 // Version: 1.0.0
 //

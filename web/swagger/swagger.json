@@ -14,7 +14,6 @@
     "title": "CNFS API.",
     "version": "1.0.0"
   },
-  "host": "localhost:8000",
   "basePath": "/api/v1",
   "paths": {
     "/auth": {
