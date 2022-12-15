@@ -9,21 +9,78 @@ import (
 )
 
 type (
+	// swagger:model
 	refreshRequest struct {
+		// The refresh token
+		// required: true
 		RefreshToken string `json:"refresh_token" validate:"required"`
 	}
 
+	// swagger:model
 	accessTokenRequest struct {
+		// The access token
+		// required: true
 		AccessToken string `json:"access_token" validate:"required"`
 	}
 
+	// swagger:model
 	accessTokenResponse struct {
-		AccessToken          string    `json:"access_token"`
+		// The access token
+		// in: body
+		AccessToken string `json:"access_token"`
+		// The access token expiry
+		// in: body
 		AccessTokenExpiresAt time.Time `json:"access_token_expiry"`
 	}
 )
 
 func (s *Server) refreshAccessToken(c echo.Context) error {
+	// Refresh access token using refresh token.
+	//
+	// swagger:operation POST /auth/refresh auth refreshAccessTokenRequestBody
+	//
+	// ---
+	// consumes:
+	// - application/json
+	//
+	// produces:
+	// - application/json
+	//
+	// parameters:
+	// - name: body
+	//   in: body
+	//   description: the payload needed for refreshing access token
+	//   required: true
+	//   schema:
+	//     "$ref": "#/definitions/refreshRequest"
+	//
+	// responses:
+	//  200:
+	//	  description: Refresh access token successful
+	//	  schema:
+	//	     type: object
+	//		 	"$ref": "#/definitions/accessTokenResponse"
+	//  400:
+	//	  description: Bad request
+	//	  schema:
+	//	     type: object
+	//		 	"$ref": "#/definitions/BadRequestResponse"
+	//  401:
+	//	  description: Unauthorized
+	//	  schema:
+	//	     type: object
+	//		 	"$ref": "#/definitions/UnauthorizedResponse"
+	//  404:
+	//	  description: Not found
+	//	  schema:
+	//	     type: object
+	//		 	"$ref": "#/definitions/NotFoundResponse"
+	//  500:
+	//	  description: Internal server error
+	//	  schema:
+	//	     type: object
+	//		 	"$ref": "#/definitions/InternalErrorResponse"
+
 	var data refreshRequest
 
 	if err := c.Bind(&data); err != nil {
@@ -77,6 +134,47 @@ func (s *Server) refreshAccessToken(c echo.Context) error {
 }
 
 func (s *Server) validateAccessToken(c echo.Context) error {
+	// Validate access token.
+	//
+	// swagger:operation POST /auth/validate auth validateAccessTokenRequestBody
+	//
+	// ---
+	// consumes:
+	// - application/json
+	//
+	// produces:
+	// - application/json
+	//
+	// parameters:
+	// - name: body
+	//   in: body
+	//   description: the access token to validate
+	//   required: true
+	//   schema:
+	//     "$ref": "#/definitions/accessTokenRequest"
+	//
+	// responses:
+	//  200:
+	//	  description: Validate access token successful
+	//	  schema:
+	//	     type: object
+	//		 	"$ref": "#/definitions/accessTokenResponse"
+	//  400:
+	//	  description: Bad request
+	//	  schema:
+	//	     type: object
+	//		 	"$ref": "#/definitions/BadRequestResponse"
+	//  401:
+	//	  description: Unauthorized
+	//	  schema:
+	//	     type: object
+	//		 	"$ref": "#/definitions/UnauthorizedResponse"
+	//  500:
+	//	  description: Internal server error
+	//	  schema:
+	//	     type: object
+	//		 	"$ref": "#/definitions/InternalErrorResponse"
+
 	var data accessTokenRequest
 
 	if err := c.Bind(&data); err != nil {
