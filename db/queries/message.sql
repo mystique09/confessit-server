@@ -1,15 +1,15 @@
 -- name: GetMessageById :one
 SELECT *
 FROM "message"
-WHERE id = $1 AND receiver_id = $2
+WHERE id = $1
 LIMIT 1;
 
 -- name: ListMessage :many
 SELECT *
 FROM "message"
-WHERE id = $1 AND receiver_id = $2 
+WHERE receiver_id = $1
 LIMIT 20
-OFFSET $3;
+OFFSET $2;
 
 -- name: CreateMessage :one
 INSERT INTO "message" (

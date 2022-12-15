@@ -9,8 +9,8 @@ CREATE TABLE "user" (
 CREATE TABLE "message" (
   "id" uuid UNIQUE PRIMARY KEY NOT NULL,
   "receiver_id" uuid NOT NULL,
-  "content" varchar,
-  "seen" boolean DEFAULT false,
+  "content" varchar NOT NULL,
+  "seen" boolean NOT NULL DEFAULT false,
   "created_at" date DEFAULT (now()),
   "updated_at" date DEFAULT (now())
 );

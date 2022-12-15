@@ -1,0 +1,920 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "# Documentation for the CNFS API.",
+    "title": "CNFS API.",
+    "version": "1.0.0"
+  },
+  "host": "localhost:8000",
+  "basePath": "/api/v1",
+  "paths": {
+    "/auth": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "operationId": "loginUser",
+        "parameters": [
+          {
+            "description": "payload needed for login",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/loginRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/loginResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "operationId": "refreshAccessTokenRequestBody",
+        "parameters": [
+          {
+            "description": "the payload needed for refreshing access token",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/refreshRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Refresh access token successful",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/accessTokenResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/UnauthorizedResponse"
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/NotFoundResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/auth/validate": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "operationId": "validateAccessTokenRequestBody",
+        "parameters": [
+          {
+            "description": "the access token to validate",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/accessTokenRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Validate access token successful",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/accessTokenResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/UnauthorizedResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/messages": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "messages"
+        ],
+        "operationId": "createMessage",
+        "parameters": [
+          {
+            "description": "this payload holds the receiver_id and the message",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/createMessageRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response with user information.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "500": {
+            "description": "Internal error.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/messages/{id}": {
+      "get": {
+        "security": [
+          {
+            "key": []
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "messages"
+        ],
+        "operationId": "getMessageById",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "uuid",
+            "description": "the message id",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response with user information.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "500": {
+            "description": "Internal error.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "security": [
+          {
+            "key": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "users"
+        ],
+        "operationId": "listUsers",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "page number",
+            "name": "page",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response with user information.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/User"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "500": {
+            "description": "Internal error.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "users"
+        ],
+        "operationId": "createUser",
+        "parameters": [
+          {
+            "description": "user information",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/createUserRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response with user information.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "500": {
+            "description": "Internal error.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "security": [
+          {
+            "key": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "users"
+        ],
+        "operationId": "getUserById",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "uuid",
+            "description": "user id",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response with user information.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/User"
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "500": {
+            "description": "Internal error.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "key": []
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "users"
+        ],
+        "operationId": "deleteUser",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "uuid",
+            "description": "user id",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "session id",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/deleteUserRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User deleted.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/UnauthorizedResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      },
+      "patch": {
+        "security": [
+          {
+            "key": []
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "users"
+        ],
+        "operationId": "updateUserById",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "uuid",
+            "description": "user id",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "user information",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/updateUserRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A success response that says \"user's username/password has been updated\"",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/UnauthorizedResponse"
+            }
+          },
+          "500": {
+            "description": "Internal error.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/messages": {
+      "get": {
+        "security": [
+          {
+            "key": []
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "messages"
+        ],
+        "operationId": "listMessages",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "the page number",
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "format": "uuid",
+            "description": "the user id",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response with user information.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/UnauthorizedResponse"
+            }
+          },
+          "500": {
+            "description": "Internal error.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "BadRequestResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "description": "the error message\nin: body",
+          "type": "string",
+          "x-go-name": "Err",
+          "example": "missing required field(s)"
+        }
+      },
+      "x-go-package": "cnfs/handler"
+    },
+    "InternalErrorResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "description": "the error message\nin: body",
+          "type": "string",
+          "x-go-name": "Err",
+          "example": "something went wrong, please try again later"
+        }
+      },
+      "x-go-package": "cnfs/handler"
+    },
+    "NotFoundResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "description": "the error message\nin: body",
+          "type": "string",
+          "x-go-name": "Err",
+          "example": "resource not found"
+        }
+      },
+      "x-go-package": "cnfs/handler"
+    },
+    "NullTime": {
+      "description": "NullTime implements the Scanner interface so\nit can be used as a scan destination, similar to NullString.",
+      "type": "object",
+      "title": "NullTime represents a time.Time that may be null.",
+      "properties": {
+        "Time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "Valid": {
+          "type": "boolean"
+        }
+      },
+      "x-go-package": "database/sql"
+    },
+    "SuccessResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "description": "the data\nthe data is in interface, it means it can be anything",
+          "x-go-name": "Data",
+          "example": "{\"id\": 1, \"name\": \"john doe\", ...}"
+        }
+      },
+      "x-go-package": "cnfs/handler"
+    },
+    "UnauthorizedResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "description": "the error message\nin: body",
+          "type": "string",
+          "x-go-name": "Err",
+          "example": "you don't have the permission to perform such task"
+        }
+      },
+      "x-go-package": "cnfs/handler"
+    },
+    "User": {
+      "type": "object",
+      "properties": {
+        "created_at": {
+          "$ref": "#/definitions/NullTime"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "ID"
+        },
+        "updated_at": {
+          "$ref": "#/definitions/NullTime"
+        },
+        "username": {
+          "type": "string",
+          "x-go-name": "Username"
+        }
+      },
+      "x-go-package": "cnfs/db/sqlc"
+    },
+    "UserId": {
+      "type": "string",
+      "format": "uuid",
+      "x-go-package": "github.com/google/uuid"
+    },
+    "accessTokenRequest": {
+      "type": "object",
+      "required": [
+        "access_token"
+      ],
+      "properties": {
+        "access_token": {
+          "description": "The access token",
+          "type": "string",
+          "x-go-name": "AccessToken"
+        }
+      },
+      "x-go-package": "cnfs/handler"
+    },
+    "accessTokenResponse": {
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "description": "The access token\nin: body",
+          "type": "string",
+          "x-go-name": "AccessToken"
+        },
+        "access_token_expiry": {
+          "description": "The access token expiry\nin: body",
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "AccessTokenExpiresAt"
+        }
+      },
+      "x-go-package": "cnfs/handler"
+    },
+    "createMessageRequest": {
+      "type": "object",
+      "required": [
+        "receiver_id",
+        "content"
+      ],
+      "properties": {
+        "content": {
+          "description": "the actual message\ntype: string",
+          "type": "string",
+          "x-go-name": "Content"
+        },
+        "receiver_id": {
+          "description": "the receiver_id\ntype: uuid",
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "ReceiverId"
+        }
+      },
+      "x-go-package": "cnfs/handler"
+    },
+    "createUserRequest": {
+      "type": "object",
+      "required": [
+        "username",
+        "password"
+      ],
+      "properties": {
+        "password": {
+          "description": "the password",
+          "type": "string",
+          "x-go-name": "Password"
+        },
+        "username": {
+          "description": "the username",
+          "type": "string",
+          "uniqueItems": true,
+          "x-go-name": "Username"
+        }
+      },
+      "x-go-package": "cnfs/handler"
+    },
+    "deleteUserRequest": {
+      "type": "object",
+      "properties": {
+        "session_id": {
+          "description": "SessionId of the user in payload",
+          "type": "string",
+          "format": "uuid",
+          "uniqueItems": true,
+          "x-go-name": "SessionId"
+        }
+      },
+      "x-go-package": "cnfs/handler"
+    },
+    "loginRequest": {
+      "type": "object",
+      "required": [
+        "username",
+        "password"
+      ],
+      "properties": {
+        "password": {
+          "description": "The password",
+          "type": "string",
+          "x-go-name": "Password"
+        },
+        "username": {
+          "description": "The username",
+          "type": "string",
+          "x-go-name": "Username"
+        }
+      },
+      "x-go-package": "cnfs/handler"
+    },
+    "loginResponse": {
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "description": "The access token that is used to access resources",
+          "type": "string",
+          "x-go-name": "AccessToken"
+        },
+        "access_token_expiry": {
+          "description": "The expiration date of access token",
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "AccessTokenExpiresAt"
+        },
+        "refresh_token": {
+          "description": "The refresh token that is used to refresh access token",
+          "type": "string",
+          "x-go-name": "RefreshToken"
+        },
+        "refresh_token_expiry": {
+          "description": "The expiration date of refresh token",
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "RefreshTokenExpiresAt"
+        },
+        "session_id": {
+          "description": "The session id that is saved in the db",
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "SessionId"
+        },
+        "user": {
+          "$ref": "#/definitions/User"
+        }
+      },
+      "x-go-package": "cnfs/handler"
+    },
+    "refreshRequest": {
+      "type": "object",
+      "required": [
+        "refresh_token"
+      ],
+      "properties": {
+        "refresh_token": {
+          "description": "The refresh token",
+          "type": "string",
+          "x-go-name": "RefreshToken"
+        }
+      },
+      "x-go-package": "cnfs/handler"
+    },
+    "updateUserRequest": {
+      "type": "object",
+      "properties": {
+        "field": {
+          "description": "Field of the user in payload",
+          "type": "string",
+          "uniqueItems": true,
+          "x-go-name": "Field"
+        },
+        "payload": {
+          "description": "Payload of the user in payload",
+          "type": "string",
+          "uniqueItems": true,
+          "x-go-name": "Payload"
+        },
+        "session_id": {
+          "description": "SessionId of the user in payload",
+          "type": "string",
+          "format": "uuid",
+          "uniqueItems": true,
+          "x-go-name": "SessionId"
+        }
+      },
+      "x-go-package": "cnfs/handler"
+    }
+  },
+  "securityDefinitions": {
+    "key": {
+      "type": "apiKey",
+      "name": "authorization",
+      "in": "header"
+    }
+  }
+}

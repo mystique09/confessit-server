@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/google/uuid"
 )
@@ -21,9 +20,9 @@ INSERT INTO "message" (
 `
 
 type CreateMessageParams struct {
-	ID         uuid.UUID      `json:"id"`
-	ReceiverID uuid.UUID      `json:"receiver_id"`
-	Content    sql.NullString `json:"content"`
+	ID         uuid.UUID `json:"id"`
+	ReceiverID uuid.UUID `json:"receiver_id"`
+	Content    string    `json:"content"`
 }
 
 func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (Message, error) {
@@ -61,17 +60,12 @@ func (q *Queries) DeleteOneMessage(ctx context.Context, arg DeleteOneMessagePara
 const getMessageById = `-- name: GetMessageById :one
 SELECT id, receiver_id, content, seen, created_at, updated_at
 FROM "message"
-WHERE id = $1 AND receiver_id = $2
+WHERE id = $1
 LIMIT 1
 `
 
-type GetMessageByIdParams struct {
-	ID         uuid.UUID `json:"id"`
-	ReceiverID uuid.UUID `json:"receiver_id"`
-}
-
-func (q *Queries) GetMessageById(ctx context.Context, arg GetMessageByIdParams) (Message, error) {
-	row := q.queryRow(ctx, q.getMessageByIdStmt, getMessageById, arg.ID, arg.ReceiverID)
+func (q *Queries) GetMessageById(ctx context.Context, id uuid.UUID) (Message, error) {
+	row := q.queryRow(ctx, q.getMessageByIdStmt, getMessageById, id)
 	var i Message
 	err := row.Scan(
 		&i.ID,
@@ -87,19 +81,18 @@ func (q *Queries) GetMessageById(ctx context.Context, arg GetMessageByIdParams) 
 const listMessage = `-- name: ListMessage :many
 SELECT id, receiver_id, content, seen, created_at, updated_at
 FROM "message"
-WHERE id = $1 AND receiver_id = $2 
+WHERE receiver_id = $1
 LIMIT 20
-OFFSET $3
+OFFSET $2
 `
 
 type ListMessageParams struct {
-	ID         uuid.UUID `json:"id"`
 	ReceiverID uuid.UUID `json:"receiver_id"`
 	Offset     int32     `json:"offset"`
 }
 
 func (q *Queries) ListMessage(ctx context.Context, arg ListMessageParams) ([]Message, error) {
-	rows, err := q.query(ctx, q.listMessageStmt, listMessage, arg.ID, arg.ReceiverID, arg.Offset)
+	rows, err := q.query(ctx, q.listMessageStmt, listMessage, arg.ReceiverID, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

@@ -19,7 +19,7 @@ type Querier interface {
 	DeleteOneUser(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 	DeleteSession(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 	DeleteSessionByUserId(ctx context.Context, userID uuid.UUID) (uuid.UUID, error)
-	GetMessageById(ctx context.Context, arg GetMessageByIdParams) (Message, error)
+	GetMessageById(ctx context.Context, id uuid.UUID) (Message, error)
 	GetSessionById(ctx context.Context, id uuid.UUID) (Session, error)
 	GetUserById(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)

@@ -1,9 +1,9 @@
 package handler
 
 import (
+	"cnfs/common"
 	"cnfs/db/mock"
 	db "cnfs/db/sqlc"
-	"cnfs/utils"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -53,6 +53,13 @@ func TestLogin(t *testing.T) {
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
 				require.Equal(t, 400, rec.Code)
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+				require.NoError(t, json.Unmarshal(body, &resp))
+				require.NotNil(t, resp.Err)
+				require.Empty(t, resp.Data)
 			},
 		},
 		{
@@ -63,6 +70,13 @@ func TestLogin(t *testing.T) {
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
 				require.Equal(t, 400, rec.Code)
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+				require.NoError(t, json.Unmarshal(body, &resp))
+				require.NotNil(t, resp.Err)
+				require.Empty(t, resp.Data)
 			},
 		},
 		{
@@ -73,6 +87,13 @@ func TestLogin(t *testing.T) {
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
 				require.Equal(t, 400, rec.Code)
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+				require.NoError(t, json.Unmarshal(body, &resp))
+				require.NotNil(t, resp.Err)
+				require.Empty(t, resp.Data)
 			},
 		},
 		{
@@ -95,7 +116,7 @@ func TestLogin(t *testing.T) {
 		},
 		{
 			name:    "MISMATCH PASSWORD",
-			payload: fmt.Sprintf(`{"username": %q, "password": %q}`, user.Username, utils.RandomString(12)),
+			payload: fmt.Sprintf(`{"username": %q, "password": %q}`, user.Username, common.RandomString(12)),
 			buildStubs: func(store *mock.MockStore) {
 				store.EXPECT().GetUserByUsername(gomock.Any(), gomock.Eq(user.Username)).Times(1).Return(user, nil)
 			},

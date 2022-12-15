@@ -1,9 +1,9 @@
 package handler
 
 import (
+	"cnfs/common"
 	"cnfs/db/mock"
 	db "cnfs/db/sqlc"
-	"cnfs/utils"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -32,7 +32,7 @@ func (e *eqCreateUserParamsMatcher) Matches(x interface{}) bool {
 		return false
 	}
 
-	err := utils.CheckPassword([]byte(arg.Password), []byte(e.password))
+	err := common.CheckPassword([]byte(arg.Password), []byte(e.password))
 	if err != nil {
 		return false
 	}
@@ -73,6 +73,13 @@ func TestCreateUser(t *testing.T) {
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
 				require.Equal(t, 200, rec.Code)
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+				require.NoError(t, json.Unmarshal(body, &resp))
+				require.NotNil(t, resp.Data)
+				require.Empty(t, resp.Err)
 			},
 		},
 		{
@@ -269,7 +276,7 @@ func TestListUsers(t *testing.T) {
 			url := fmt.Sprintf("/api/v1/users?page=%s", tc.payload)
 
 			req := httptest.NewRequest(http.MethodGet, url, nil)
-			token, _, err := server.tokenMaker.CreateToken(uuid.New(), utils.RandomString(12), cfg.AccessTokenDuration)
+			token, _, err := server.tokenMaker.CreateToken(uuid.New(), common.RandomString(12), cfg.AccessTokenDuration)
 			require.NoError(t, err)
 			req.Header.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", token))
 
@@ -303,7 +310,7 @@ func TestGetUserById(t *testing.T) {
 		},
 		{
 			name:    "Invalid ID",
-			payload: utils.RandomString(12),
+			payload: common.RandomString(12),
 			buildStubs: func(store *mock.MockStore) {
 				store.EXPECT().GetUserById(gomock.Any(), gomock.Any()).Times(0)
 			},
@@ -388,7 +395,7 @@ func (e *eqUpdateUserParamsMatcher) Matches(x interface{}) bool {
 		return false
 	}
 
-	err := utils.CheckPassword([]byte(arg.Password), []byte(e.password))
+	err := common.CheckPassword([]byte(arg.Password), []byte(e.password))
 	if err != nil {
 		return false
 	}
@@ -410,8 +417,8 @@ func EqUpdateUserParams(arg *db.UpdateUserPasswordParams, password string) gomoc
 func TestUpdateUser(t *testing.T) {
 	_, user := randomUser(t)
 	session_id := uuid.New()
-	newUsername := utils.RandomString(12)
-	newPassword := utils.RandomString(12)
+	newUsername := common.RandomString(12)
+	newPassword := common.RandomString(12)
 
 	testCases := []testCase{
 		{
@@ -444,7 +451,7 @@ func TestUpdateUser(t *testing.T) {
 			name:    "OK-Password",
 			payload: fmt.Sprintf(`{"field": "password", "payload": %q, "session_id": %q}`, newPassword, session_id),
 			buildStubs: func(store *mock.MockStore) {
-				hashedPass, err := utils.HashPassword(newPassword)
+				hashedPass, err := common.HashPassword(newPassword)
 				require.NoError(t, err)
 
 				arg := db.UpdateUserPasswordParams{
@@ -544,6 +551,13 @@ func TestDeleteUser(t *testing.T) {
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
 				require.Equal(t, 200, rec.Code)
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+				require.NoError(t, json.Unmarshal(body, &resp))
+				require.NotNil(t, resp.Data)
+				require.Empty(t, resp.Err)
 			},
 		},
 		{
@@ -555,6 +569,13 @@ func TestDeleteUser(t *testing.T) {
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
 				require.Equal(t, 401, rec.Code)
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+				require.NoError(t, json.Unmarshal(body, &resp))
+				require.NotNil(t, resp.Err)
+				require.Empty(t, resp.Data)
 			},
 		},
 		{
@@ -566,6 +587,13 @@ func TestDeleteUser(t *testing.T) {
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
 				require.Equal(t, 500, rec.Code)
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+				require.NoError(t, json.Unmarshal(body, &resp))
+				require.NotNil(t, resp.Err)
+				require.Empty(t, resp.Data)
 			},
 		},
 		{
