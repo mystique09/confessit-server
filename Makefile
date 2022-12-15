@@ -37,6 +37,10 @@ lint:
 	gocritic check -enableAll ./...
 	golangci-lint run ./...
 
+doc:
+	rm -rf ./web/swagger/swagger.json
+	swagger generate spec -o ./web/swagger/swagger.json --scan-models
+
 test: clean
 	go test -v -cover -coverprofile=coverage.out ./...
 	
