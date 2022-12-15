@@ -1,6 +1,4 @@
 mode: set
-cnfs/handler/response.go:54.37,56.2 1 1
-cnfs/handler/response.go:58.46,60.2 1 1
 cnfs/handler/user.go:73.51,111.38 2 1
 cnfs/handler/user.go:115.2,115.42 1 1
 cnfs/handler/user.go:119.2,120.16 2 1
@@ -100,7 +98,7 @@ cnfs/handler/handler.go:54.58,55.47 1 1
 cnfs/handler/handler.go:58.2,58.12 1 1
 cnfs/handler/handler.go:55.47,57.3 1 1
 cnfs/handler/handler.go:61.33,65.16 4 0
-cnfs/handler/handler.go:69.2,69.42 1 0
+cnfs/handler/handler.go:69.2,69.59 1 0
 cnfs/handler/handler.go:65.16,67.3 1 0
 cnfs/handler/handler.go:72.69,75.16 2 1
 cnfs/handler/handler.go:79.2,86.20 3 1
@@ -204,3 +202,5 @@ cnfs/handler/refresh.go:193.2,198.39 2 0
 cnfs/handler/refresh.go:180.38,182.3 1 0
 cnfs/handler/refresh.go:184.42,186.3 1 0
 cnfs/handler/refresh.go:189.16,191.3 1 0
+cnfs/handler/response.go:54.37,56.2 1 1
+cnfs/handler/response.go:58.46,60.2 1 1

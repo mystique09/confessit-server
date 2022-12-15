@@ -10,6 +10,7 @@ import (
 type Config struct {
 	DatabaseUrl           string        `mapstructure:"DATABASE_URL"`
 	Host                  string        `mapstructure:"HOST"`
+	Port                  string        `mapstructure:"PORT"`
 	PasetoSymmetricKey    string        `mapstructure:"PASETO_SYMMETRIC_KEY"`
 	AccessTokenSecretKey  string        `mapstructure:"ACCESS_TOKEN_SECRET"`
 	AccessTokenDuration   time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`

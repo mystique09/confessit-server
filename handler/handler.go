@@ -66,7 +66,7 @@ func Launch(cfg *config.Config) {
 		log.Fatal(err.Error())
 	}
 
-	log.Fatal(server.router.Start(cfg.Host))
+	log.Fatal(server.router.Start(cfg.Host + ":" + cfg.Port))
 }
 
 func NewServer(store db.Store, cfg *config.Config) (*Server, error) {
