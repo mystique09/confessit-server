@@ -1,9 +1,32 @@
+// Package specification CNFS API.
+//
+// # Documentation for the CNFS API.
+//
+// Schemes: http
+// Host: localhost:8000
+// BasePath: /api/v1
+// Version: 1.0.0
+//
+// Consumes:
+// - application/json
+//
+// Produces:
+// - application/json
+//
+//	securityDefinitions:
+//		key:
+//		 type: apiKey
+//		 in: header
+//		 name: authorization
+//
+// swagger:meta
 package handler
 
 import (
+	"cnfs/common"
 	db "cnfs/db/sqlc"
 	"cnfs/token"
-	"cnfs/utils"
+	"cnfs/web"
 	"log"
 	"net/http"
 	"os"
@@ -36,7 +59,7 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 }
 
 func Launch(cfg *config.Config) {
-	conn := utils.SetupDb(cfg.DatabaseUrl)
+	conn := common.SetupDb(cfg.DatabaseUrl)
 	store := db.NewStore(conn, cfg)
 	server, err := NewServer(store, cfg)
 	if err != nil {
@@ -76,10 +99,10 @@ func (s *Server) setupRouter() {
 	e.GET("/", func(c echo.Context) error {
 		return c.String(200, "CNFS server, running on Echo v4.")
 	})
-
 	e.GET("/health", func(c echo.Context) error {
 		return c.String(200, "Health: 100/100 Armor: 100/100")
 	})
+	e.StaticFS("/docs", web.BuildHttpFS())
 
 	auth := e.Group("/api/v1/auth")
 	auth.POST("", s.loginUser)
