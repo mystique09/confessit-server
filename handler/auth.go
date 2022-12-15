@@ -1,8 +1,8 @@
 package handler
 
 import (
+	"cnfs/common"
 	db "cnfs/db/sqlc"
-	"cnfs/utils"
 	"database/sql"
 	"net/http"
 	"time"
@@ -12,22 +12,70 @@ import (
 )
 
 type (
+	// swagger:model
 	loginRequest struct {
+		// The username
+		// required: true
 		Username string `json:"username" validate:"required,gte=8"`
+		// The password
+		// required: true
 		Password string `json:"password" validate:"required,gte=8"`
 	}
 
+	// swagger:model loginResponse
 	loginResponse struct {
-		SessionId             uuid.UUID `json:"session_id"`
-		AccessToken           string    `json:"access_token"`
-		AccessTokenExpiresAt  time.Time `json:"access_token_expiry"`
-		RefreshToken          string    `json:"refresh_token"`
+		// The session id that is saved in the db
+		SessionId uuid.UUID `json:"session_id"`
+		// The access token that is used to access resources
+		AccessToken string `json:"access_token"`
+		// The expiration date of access token
+		AccessTokenExpiresAt time.Time `json:"access_token_expiry"`
+		// The refresh token that is used to refresh access token
+		RefreshToken string `json:"refresh_token"`
+		// The expiration date of refresh token
 		RefreshTokenExpiresAt time.Time `json:"refresh_token_expiry"`
-		User                  db.User   `json:"user"`
+		// The user information needed for client
+		User db.User `json:"user"`
 	}
 )
 
+// Login endpoint.
 func (s *Server) loginUser(c echo.Context) error {
+	// The login handler.
+	// swagger:operation POST /auth auth loginUser
+	//
+	// ---
+	// consumes:
+	// - application/json
+	//
+	// produces:
+	// - application/json
+	//
+	// parameters:
+	// - name: body
+	//   in: body
+	//   description: payload needed for login
+	//   required: true
+	//   schema:
+	//     "$ref": "#/definitions/loginRequest"
+	//
+	// responses:
+	//  200:
+	//	  description: Login successful
+	//	  schema:
+	//	     type: object
+	//		 	"$ref": "#/definitions/loginResponse"
+	//  400:
+	//	  description: Bad request
+	//	  schema:
+	//	     type: object
+	//		 	"$ref": "#/definitions/BadRequestResponse"
+	//  500:
+	//	  description: Internal server error
+	//	  schema:
+	//	     type: object
+	//		 	"$ref": "#/definitions/InternalErrorResponse"
+
 	var data loginRequest
 
 	if err := c.Bind(&data); err != nil {
@@ -46,7 +94,7 @@ func (s *Server) loginUser(c echo.Context) error {
 		return c.JSON(500, newError(err.Error()))
 	}
 
-	if err := utils.CheckPassword([]byte(user.Password), []byte(data.Password)); err != nil {
+	if err := common.CheckPassword([]byte(user.Password), []byte(data.Password)); err != nil {
 		return c.JSON(403, newError("password mismatch"))
 	}
 
