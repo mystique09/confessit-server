@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log"
 	"time"
 
 	"github.com/spf13/viper"
@@ -32,6 +33,8 @@ func LoadConfig(path, name string) (Config, error) {
 	if err := viper.Unmarshal(&config); err != nil {
 		return Config{}, nil
 	}
+
+	log.Println(config)
 
 	return config, nil
 }
