@@ -24,7 +24,7 @@ type testCase struct {
 var cfg *config.Config
 
 func TestMain(m *testing.M) {
-	c, err := config.LoadConfig("..", "app")
+	c, err := config.LoadConfig()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
