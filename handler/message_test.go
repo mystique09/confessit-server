@@ -1,9 +1,9 @@
 package handler
 
 import (
+	"cnfs/common"
 	"cnfs/db/mock"
 	db "cnfs/db/sqlc"
-	"cnfs/utils"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -266,7 +266,7 @@ func TestListMessages(t *testing.T) {
 			require.NoError(t, err)
 
 			req := httptest.NewRequest(http.MethodGet, tc.payload, nil)
-			token, _, err := server.tokenMaker.CreateToken(uuid.New(), utils.RandomString(12), cfg.AccessTokenDuration)
+			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, cfg.AccessTokenDuration)
 			require.NoError(t, err)
 			req.Header.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", token))
 
@@ -276,6 +276,73 @@ func TestListMessages(t *testing.T) {
 			tc.checkResponse(rec)
 		})
 	}
+}
+
+func TestListMessagesUnauthorized(t *testing.T) {
+	_, user := randomUser(t)
+
+	testCases := []testCase{
+		{
+			name:    "Unauthorized",
+			payload: fmt.Sprintf("/api/v1/users/%s/messages?page=%d", user.ID, 0),
+			buildStubs: func(store *mock.MockStore) {
+				store.EXPECT().ListMessage(gomock.Any(), gomock.Any()).Times(0)
+			},
+			checkResponse: func(rec *httptest.ResponseRecorder) {
+				require.Equal(t, 401, rec.Code)
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+				require.NoError(t, json.Unmarshal(body, &resp))
+				require.NotNil(t, resp.Err)
+				require.Empty(t, resp.Data)
+			},
+		},
+		{
+			name:    "Unauthorized - with query param > 0",
+			payload: fmt.Sprintf("/api/v1/users/%s/messages?page=%d", user.ID, 1),
+			buildStubs: func(store *mock.MockStore) {
+				store.EXPECT().ListMessage(gomock.Any(), gomock.Any()).Times(0)
+			},
+			checkResponse: func(rec *httptest.ResponseRecorder) {
+				require.Equal(t, 401, rec.Code)
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+				require.NoError(t, json.Unmarshal(body, &resp))
+				require.NotNil(t, resp.Err)
+				require.Empty(t, resp.Data)
+			},
+		},
+	}
+
+	for i := range testCases {
+		tc := testCases[i]
+
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			store := mock.NewMockStore(ctrl)
+			tc.buildStubs(store)
+
+			server, err := NewServer(store, cfg)
+			require.NoError(t, err)
+
+			req := httptest.NewRequest(http.MethodGet, tc.payload, nil)
+			token, _, err := server.tokenMaker.CreateToken(uuid.New(), common.RandomString(12), cfg.AccessTokenDuration)
+			require.NoError(t, err)
+			req.Header.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", token))
+
+			rec := httptest.NewRecorder()
+
+			server.router.ServeHTTP(rec, req)
+			tc.checkResponse(rec)
+		})
+	}
+
 }
 
 func TestGetMessageById(t *testing.T) {
@@ -337,7 +404,7 @@ func TestGetMessageById(t *testing.T) {
 		},
 		{
 			name:    "Invalid UUID",
-			payload: fmt.Sprintf("/api/v1/messages/%s", utils.RandomString(12)),
+			payload: fmt.Sprintf("/api/v1/messages/%s", common.RandomString(12)),
 			buildStubs: func(store *mock.MockStore) {
 				store.EXPECT().GetMessageById(gomock.Any(), gomock.Any()).Times(0)
 			},
@@ -368,7 +435,7 @@ func TestGetMessageById(t *testing.T) {
 			require.NoError(t, err)
 
 			req := httptest.NewRequest(http.MethodGet, tc.payload, nil)
-			token, _, err := server.tokenMaker.CreateToken(uuid.New(), utils.RandomString(12), cfg.AccessTokenDuration)
+			token, _, err := server.tokenMaker.CreateToken(uuid.New(), common.RandomString(12), cfg.AccessTokenDuration)
 			require.NoError(t, err)
 			req.Header.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", token))
 
