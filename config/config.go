@@ -17,9 +17,10 @@ type Config struct {
 	ClientUrl             string        `mapstructure:"CLIENT_URL"`
 }
 
-func LoadConfig() (Config, error) {
-	viper.AddConfigPath("../")
-	viper.SetConfigFile(".env")
+func LoadConfig(path, name string) (Config, error) {
+	viper.AddConfigPath(path)
+	viper.SetConfigName(name)
+	viper.SetConfigType("env")
 
 	viper.AutomaticEnv()
 
