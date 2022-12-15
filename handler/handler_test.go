@@ -1,10 +1,10 @@
 package handler
 
 import (
+	"cnfs/common"
 	"cnfs/config"
 	"cnfs/db/mock"
 	db "cnfs/db/sqlc"
-	"cnfs/utils"
 	"log"
 	"net/http/httptest"
 	"os"
@@ -35,13 +35,13 @@ func TestMain(m *testing.M) {
 }
 
 func randomUser(t *testing.T) (string, db.User) {
-	password := utils.RandomString(14)
-	hashedPassword, err := utils.HashPassword(password)
+	password := common.RandomString(14)
+	hashedPassword, err := common.HashPassword(password)
 	require.NoError(t, err)
 
 	user := db.User{
 		ID:       uuid.New(),
-		Username: utils.RandomString(12),
+		Username: common.RandomString(12),
 		Password: hashedPassword,
 	}
 
@@ -52,7 +52,7 @@ func randomMessage(t *testing.T, userId uuid.UUID) db.Message {
 	return db.Message{
 		ID:         uuid.New(),
 		ReceiverID: userId,
-		Content:    utils.RandomString(48),
+		Content:    common.RandomString(48),
 		Seen:       false,
 	}
 }
