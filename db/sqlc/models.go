@@ -5,19 +5,94 @@
 package db
 
 import (
-	"database/sql"
+	"database/sql/driver"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 )
 
+type Satisfaction string
+
+const (
+	SatisfactionLIKE    Satisfaction = "LIKE"
+	SatisfactionDISLIKE Satisfaction = "DISLIKE"
+)
+
+func (e *Satisfaction) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Satisfaction(s)
+	case string:
+		*e = Satisfaction(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Satisfaction: %T", src)
+	}
+	return nil
+}
+
+type NullSatisfaction struct {
+	Satisfaction Satisfaction
+	Valid        bool // Valid is true if Satisfaction is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullSatisfaction) Scan(value interface{}) error {
+	if value == nil {
+		ns.Satisfaction, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Satisfaction.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullSatisfaction) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return ns.Satisfaction, nil
+}
+
+type Comment struct {
+	ID             uuid.UUID     `json:"id"`
+	Content        string        `json:"content"`
+	UserIdentityID uuid.UUID     `json:"user_identity_id"`
+	PostID         uuid.UUID     `json:"post_id"`
+	ParentID       uuid.NullUUID `json:"parent_id"`
+	CreatedAt      time.Time     `json:"created_at"`
+	UpdatedAt      time.Time     `json:"updated_at"`
+}
+
+type CommentLike struct {
+	ID             uuid.UUID        `json:"id"`
+	UserIdentityID uuid.UUID        `json:"user_identity_id"`
+	CommentID      uuid.UUID        `json:"comment_id"`
+	Type           NullSatisfaction `json:"type"`
+}
+
+type Like struct {
+	ID             uuid.UUID        `json:"id"`
+	UserIdentityID uuid.UUID        `json:"user_identity_id"`
+	PostID         uuid.UUID        `json:"post_id"`
+	Type           NullSatisfaction `json:"type"`
+}
+
 type Message struct {
-	ID         uuid.UUID    `json:"id"`
-	ReceiverID uuid.UUID    `json:"receiver_id"`
-	Content    string       `json:"content"`
-	Seen       bool         `json:"seen"`
-	CreatedAt  sql.NullTime `json:"created_at"`
-	UpdatedAt  sql.NullTime `json:"updated_at"`
+	ID         uuid.UUID `json:"id"`
+	ReceiverID uuid.UUID `json:"receiver_id"`
+	Content    string    `json:"content"`
+	Seen       bool      `json:"seen"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+}
+
+type Post struct {
+	ID             uuid.UUID `json:"id"`
+	Content        string    `json:"content"`
+	UserIdentityID uuid.UUID `json:"user_identity_id"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 type Session struct {
@@ -33,9 +108,15 @@ type Session struct {
 }
 
 type User struct {
-	ID        uuid.UUID    `json:"id"`
-	Username  string       `json:"username"`
-	Password  string       `json:"-"`
-	CreatedAt sql.NullTime `json:"created_at"`
-	UpdatedAt sql.NullTime `json:"updated_at"`
+	ID        uuid.UUID `json:"id"`
+	Username  string    `json:"username"`
+	Password  string    `json:"-"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type UserIdentity struct {
+	ID           uuid.UUID `json:"id"`
+	UserID       uuid.UUID `json:"user_id"`
+	IdentityHash uuid.UUID `json:"identity_hash"`
 }
