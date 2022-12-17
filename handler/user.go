@@ -135,6 +135,15 @@ func (s *Server) createUser(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, INTERNAL_ERROR)
 	}
 
+	_, err = s.store.CreateUserIdentity(c.Request().Context(), db.CreateUserIdentityParams{
+		ID:           uuid.New(),
+		UserID:       user,
+		IdentityHash: uuid.New(),
+	})
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, INTERNAL_ERROR)
+	}
+
 	return c.JSON(http.StatusOK, newResponse(user))
 }
 

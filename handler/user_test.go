@@ -52,7 +52,7 @@ func EqCreateUserParams(arg *db.CreateUserParams, password string) gomock.Matche
 }
 
 func TestCreateUser(t *testing.T) {
-	password, user := randomUser(t)
+	password, user := RandomUser(t)
 
 	testCases := []testCase{
 		{
@@ -70,6 +70,7 @@ func TestCreateUser(t *testing.T) {
 					CreateUser(gomock.Any(), EqCreateUserParams(&arg, password)).
 					Times(1).
 					Return(user.ID, nil)
+				store.EXPECT().CreateUserIdentity(gomock.Any(), gomock.Any()).Times(1)
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
 				require.Equal(t, 200, rec.Code)
@@ -131,6 +132,7 @@ func TestCreateUser(t *testing.T) {
 				}
 
 				store.EXPECT().CreateUser(gomock.Any(), EqCreateUserParams(&arg, password)).Times(1).Return(user.ID, errors.New("unique violation"))
+				store.EXPECT().CreateUserIdentity(gomock.Any(), gomock.Any()).Times(0)
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
 				require.Equal(t, 400, rec.Code)
@@ -149,6 +151,7 @@ func TestCreateUser(t *testing.T) {
 			payload: fmt.Sprintf(`{"username": %q, "password": %q}`, user.Username, password),
 			buildStubs: func(store *mock.MockStore) {
 				store.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Times(1).Return(uuid.Nil, sql.ErrConnDone)
+				store.EXPECT().CreateUserIdentity(gomock.Any(), gomock.Any()).Times(0)
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
 				require.Equal(t, 500, rec.Code)
@@ -287,7 +290,7 @@ func TestListUsers(t *testing.T) {
 }
 
 func TestGetUserById(t *testing.T) {
-	_, user := randomUser(t)
+	_, user := RandomUser(t)
 
 	testCases := []testCase{
 		{
@@ -415,7 +418,7 @@ func EqUpdateUserParams(arg *db.UpdateUserPasswordParams, password string) gomoc
 }
 
 func TestUpdateUser(t *testing.T) {
-	_, user := randomUser(t)
+	_, user := RandomUser(t)
 	session_id := uuid.New()
 	newUsername := common.RandomString(12)
 	newPassword := common.RandomString(12)
@@ -538,7 +541,7 @@ func TestUpdateUser(t *testing.T) {
 }
 
 func TestDeleteUser(t *testing.T) {
-	_, user := randomUser(t)
+	_, user := RandomUser(t)
 	sessionId := uuid.New()
 
 	testCases := []testCase{
