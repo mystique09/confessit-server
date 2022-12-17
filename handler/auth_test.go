@@ -19,7 +19,7 @@ import (
 )
 
 func TestLogin(t *testing.T) {
-	password, user := randomUser(t)
+	password, user := RandomUser(t)
 
 	testCases := []struct {
 		name          string
@@ -33,6 +33,7 @@ func TestLogin(t *testing.T) {
 			buildStubs: func(store *mock.MockStore) {
 				store.EXPECT().GetUserByUsername(gomock.Any(), gomock.Eq(user.Username)).Times(1).Return(user, nil)
 				store.EXPECT().CreateSession(gomock.Any(), gomock.Any()).Times(1)
+				store.EXPECT().GetUserIdentityByUserId(gomock.Any(), gomock.Any()).Times(1)
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
 				require.Equal(t, 200, rec.Code)

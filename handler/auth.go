@@ -35,7 +35,8 @@ type (
 		// The expiration date of refresh token
 		RefreshTokenExpiresAt time.Time `json:"refresh_token_expiry"`
 		// The user information needed for client
-		User db.User `json:"user"`
+		User         db.User         `json:"user"`
+		UserIdentity db.UserIdentity `json:"user_identity"`
 	}
 )
 
@@ -127,6 +128,14 @@ func (s *Server) loginUser(c echo.Context) error {
 		return c.JSON(500, newError(err.Error()))
 	}
 
+	userIdentity, err := s.store.GetUserIdentityByUserId(c.Request().Context(), user.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return c.JSON(http.StatusBadRequest, newError(err.Error()))
+		}
+		return c.JSON(500, newError(err.Error()))
+	}
+
 	resp := loginResponse{
 		SessionId:             newSession.ID,
 		AccessToken:           accessToken,
@@ -134,6 +143,7 @@ func (s *Server) loginUser(c echo.Context) error {
 		RefreshToken:          refreshToken,
 		RefreshTokenExpiresAt: refreshTokenPayload.ExpiredAt,
 		User:                  user,
+		UserIdentity:          userIdentity,
 	}
 
 	return c.JSON(200, newResponse(resp))
