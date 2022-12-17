@@ -34,7 +34,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func randomUser(t *testing.T) (string, db.User) {
+func RandomUser(t *testing.T) (string, db.User) {
 	password := common.RandomString(14)
 	hashedPassword, err := common.HashPassword(password)
 	require.NoError(t, err)
@@ -48,11 +48,19 @@ func randomUser(t *testing.T) (string, db.User) {
 	return password, user
 }
 
-func randomMessage(t *testing.T, userId uuid.UUID) db.Message {
+func RandomMessage(t *testing.T, userId uuid.UUID) db.Message {
 	return db.Message{
 		ID:         uuid.New(),
 		ReceiverID: userId,
 		Content:    common.RandomString(48),
 		Seen:       false,
+	}
+}
+
+func RandomPost(t *testing.T, id uuid.UUID) db.Post {
+	return db.Post{
+		ID:             uuid.New(),
+		UserIdentityID: id,
+		Content:        common.RandomString(48),
 	}
 }
