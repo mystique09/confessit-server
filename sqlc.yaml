@@ -12,5 +12,5 @@ packages:
   emit_interface: true
   emit_exact_table_names: false
   overrides:
-  - column: "user.password"
+  - column: "users.password"
     go_struct_tag: 'json:"-"'
