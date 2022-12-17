@@ -45,8 +45,8 @@ func EqCreateMessageParams(arg *db.CreateMessageParams, id uuid.UUID) gomock.Mat
 }
 
 func TestServer_createMessage(t *testing.T) {
-	_, user := randomUser(t)
-	msg := randomMessage(t, user.ID)
+	_, user := RandomUser(t)
+	msg := RandomMessage(t, user.ID)
 
 	testCases := []testCase{
 		{
@@ -148,7 +148,7 @@ func TestServer_createMessage(t *testing.T) {
 }
 
 func TestListMessages(t *testing.T) {
-	_, user := randomUser(t)
+	_, user := RandomUser(t)
 	messages := make([]db.Message, 20)
 	testCases := []testCase{
 		{
@@ -279,7 +279,7 @@ func TestListMessages(t *testing.T) {
 }
 
 func TestListMessagesUnauthorized(t *testing.T) {
-	_, user := randomUser(t)
+	_, user := RandomUser(t)
 
 	testCases := []testCase{
 		{
@@ -346,8 +346,8 @@ func TestListMessagesUnauthorized(t *testing.T) {
 }
 
 func TestGetMessageById(t *testing.T) {
-	_, user := randomUser(t)
-	msg := randomMessage(t, user.ID)
+	_, user := RandomUser(t)
+	msg := RandomMessage(t, user.ID)
 
 	testCases := []testCase{
 		{
@@ -448,8 +448,8 @@ func TestGetMessageById(t *testing.T) {
 }
 
 func TestDeleteMessage(t *testing.T) {
-	_, user := randomUser(t)
-	msg := randomMessage(t, user.ID)
+	_, user := RandomUser(t)
+	msg := RandomMessage(t, user.ID)
 
 	testCases := []testCase{
 		{
@@ -512,7 +512,7 @@ func TestDeleteMessage(t *testing.T) {
 			name:    "UNAUTHORIZED ACCESS",
 			payload: fmt.Sprintf("/api/v1/messages/%s", msg.ID),
 			buildStubs: func(store *mock.MockStore) {
-				store.EXPECT().GetMessageById(gomock.Any(), gomock.Eq(msg.ID)).Times(1).Return(randomMessage(t, uuid.New()), nil)
+				store.EXPECT().GetMessageById(gomock.Any(), gomock.Eq(msg.ID)).Times(1).Return(RandomMessage(t, uuid.New()), nil)
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
 				require.Equal(t, 401, rec.Code)
