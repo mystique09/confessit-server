@@ -28,6 +28,7 @@ type Querier interface {
 	DeletePostLike(ctx context.Context, arg DeletePostLikeParams) (Like, error)
 	DeleteSession(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 	DeleteSessionByUserId(ctx context.Context, userID uuid.UUID) (uuid.UUID, error)
+	GetComment(ctx context.Context, id uuid.UUID) (Comment, error)
 	GetMessageById(ctx context.Context, id uuid.UUID) (Message, error)
 	GetPostById(ctx context.Context, id uuid.UUID) (Post, error)
 	GetSessionById(ctx context.Context, id uuid.UUID) (Session, error)

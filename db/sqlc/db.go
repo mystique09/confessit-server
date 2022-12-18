@@ -75,6 +75,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteSessionByUserIdStmt, err = db.PrepareContext(ctx, deleteSessionByUserId); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteSessionByUserId: %w", err)
 	}
+	if q.getCommentStmt, err = db.PrepareContext(ctx, getComment); err != nil {
+		return nil, fmt.Errorf("error preparing query GetComment: %w", err)
+	}
 	if q.getMessageByIdStmt, err = db.PrepareContext(ctx, getMessageById); err != nil {
 		return nil, fmt.Errorf("error preparing query GetMessageById: %w", err)
 	}
@@ -217,6 +220,11 @@ func (q *Queries) Close() error {
 	if q.deleteSessionByUserIdStmt != nil {
 		if cerr := q.deleteSessionByUserIdStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteSessionByUserIdStmt: %w", cerr)
+		}
+	}
+	if q.getCommentStmt != nil {
+		if cerr := q.getCommentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getCommentStmt: %w", cerr)
 		}
 	}
 	if q.getMessageByIdStmt != nil {
@@ -365,6 +373,7 @@ type Queries struct {
 	deletePostLikeStmt          *sql.Stmt
 	deleteSessionStmt           *sql.Stmt
 	deleteSessionByUserIdStmt   *sql.Stmt
+	getCommentStmt              *sql.Stmt
 	getMessageByIdStmt          *sql.Stmt
 	getPostByIdStmt             *sql.Stmt
 	getSessionByIdStmt          *sql.Stmt
@@ -406,6 +415,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		deletePostLikeStmt:          q.deletePostLikeStmt,
 		deleteSessionStmt:           q.deleteSessionStmt,
 		deleteSessionByUserIdStmt:   q.deleteSessionByUserIdStmt,
+		getCommentStmt:              q.getCommentStmt,
 		getMessageByIdStmt:          q.getMessageByIdStmt,
 		getPostByIdStmt:             q.getPostByIdStmt,
 		getSessionByIdStmt:          q.getSessionByIdStmt,

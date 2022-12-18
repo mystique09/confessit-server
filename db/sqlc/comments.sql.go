@@ -64,6 +64,25 @@ func (q *Queries) DeleteComment(ctx context.Context, id uuid.UUID) (Comment, err
 	return i, err
 }
 
+const getComment = `-- name: GetComment :one
+SELECT id, content, user_identity_id, post_id, parent_id, created_at, updated_at FROM "comments" WHERE id = $1
+`
+
+func (q *Queries) GetComment(ctx context.Context, id uuid.UUID) (Comment, error) {
+	row := q.queryRow(ctx, q.getCommentStmt, getComment, id)
+	var i Comment
+	err := row.Scan(
+		&i.ID,
+		&i.Content,
+		&i.UserIdentityID,
+		&i.PostID,
+		&i.ParentID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const listAllComments = `-- name: ListAllComments :many
 SELECT id, content, user_identity_id, post_id, parent_id, created_at, updated_at FROM "comments" WHERE post_id = $1
 `
