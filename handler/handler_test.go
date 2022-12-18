@@ -57,10 +57,20 @@ func RandomMessage(t *testing.T, userId uuid.UUID) db.Message {
 	}
 }
 
-func RandomPost(t *testing.T, id uuid.UUID) db.Post {
+func RandomPost(t *testing.T, userIdentityId uuid.UUID) db.Post {
 	return db.Post{
 		ID:             uuid.New(),
-		UserIdentityID: id,
+		UserIdentityID: userIdentityId,
 		Content:        common.RandomString(48),
+	}
+}
+
+func RandomComment(t *testing.T, postId uuid.UUID, parentId uuid.NullUUID) db.Comment {
+	return db.Comment{
+		ID:             uuid.New(),
+		PostID:         postId,
+		Content:        common.RandomString(48),
+		UserIdentityID: uuid.New(),
+		ParentID:       parentId,
 	}
 }
