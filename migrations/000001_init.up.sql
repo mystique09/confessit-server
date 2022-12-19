@@ -5,7 +5,7 @@ CREATE TYPE "satisfaction" AS ENUM (
 
 CREATE TABLE "users" (
   "id" uuid UNIQUE PRIMARY KEY NOT NULL,
-  "username" varchar NOT NULL,
+  "username" varchar UNIQUE NOT NULL,
   "password" varchar NOT NULL,
   "created_at" date NOT NULL DEFAULT (now()),
   "updated_at" date NOT NULL DEFAULT (now())
