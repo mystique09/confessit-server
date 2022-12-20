@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/require"
 )
@@ -153,6 +154,78 @@ func TestLogin(t *testing.T) {
 			payload := strings.NewReader(tc.payload)
 
 			req := httptest.NewRequest(http.MethodPost, "/api/v1/auth", payload)
+			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+			server.router.ServeHTTP(rec, req)
+			tc.checkResponse(rec)
+		})
+	}
+}
+
+func TestClearSession(t *testing.T) {
+	sessionId := uuid.New()
+
+	testCases := []testCase{
+		{
+			name:    "OK",
+			payload: fmt.Sprintf(`{"session_id": %q}`, sessionId),
+			buildStubs: func(store *mock.MockStore) {
+				store.EXPECT().DeleteSession(gomock.Any(), gomock.Eq(sessionId)).Times(1).Return(sessionId, nil)
+			},
+			checkResponse: func(rec *httptest.ResponseRecorder) {
+				require.Equal(t, 200, rec.Code)
+			},
+		},
+		{
+			name:    "BAD REQUEST/Missing session ID",
+			payload: "{}",
+			buildStubs: func(store *mock.MockStore) {
+				store.EXPECT().DeleteSession(gomock.Any(), gomock.Eq(sessionId)).Times(0)
+			},
+			checkResponse: func(rec *httptest.ResponseRecorder) {
+				require.Equal(t, 400, rec.Code)
+			},
+		},
+		{
+			name:    "SESSION NOT FOUND",
+			payload: fmt.Sprintf(`{"session_id": %q}`, sessionId),
+			buildStubs: func(store *mock.MockStore) {
+				store.EXPECT().DeleteSession(gomock.Any(), gomock.Eq(sessionId)).Times(1).Return(uuid.Nil, sql.ErrNoRows)
+			},
+			checkResponse: func(rec *httptest.ResponseRecorder) {
+				require.Equal(t, 404, rec.Code)
+			},
+		},
+		{
+			name:    "INTERNAL ERROR",
+			payload: fmt.Sprintf(`{"session_id": %q}`, sessionId),
+			buildStubs: func(store *mock.MockStore) {
+				store.EXPECT().DeleteSession(gomock.Any(), gomock.Eq(sessionId)).Times(1).Return(uuid.Nil, sql.ErrConnDone)
+			},
+			checkResponse: func(rec *httptest.ResponseRecorder) {
+				require.Equal(t, 500, rec.Code)
+			},
+		},
+	}
+
+	for i := range testCases {
+		tc := testCases[i]
+
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			store := mock.NewMockStore(ctrl)
+			tc.buildStubs(store)
+
+			server, err := NewServer(store, cfg)
+			require.NoError(t, err)
+
+			rec := httptest.NewRecorder()
+
+			req := httptest.NewRequest(http.MethodDelete, "/api/v1/auth/clear", strings.NewReader(tc.payload))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 
 			server.router.ServeHTTP(rec, req)
