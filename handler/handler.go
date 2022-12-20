@@ -107,6 +107,7 @@ func (s *Server) setupRouter() {
 	auth.POST("", s.loginUser)
 	auth.POST("/refresh", s.refreshAccessToken)
 	auth.POST("/validate", s.validateAccessToken)
+	auth.DELETE("/clear", s.logoutUser)
 
 	users := e.Group("/api/v1/users")
 	users.GET("", s.listUsers, s.authMiddleware)
