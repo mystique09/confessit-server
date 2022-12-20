@@ -22,6 +22,11 @@ type (
 		Password string `json:"password" validate:"required,gte=8"`
 	}
 
+	// swagger:model
+	logoutRequest struct {
+		SessionId uuid.UUID `json:"session_id" validate:"required"`
+	}
+
 	// swagger:model loginResponse
 	loginResponse struct {
 		// The session id that is saved in the db
@@ -147,4 +152,65 @@ func (s *Server) loginUser(c echo.Context) error {
 	}
 
 	return c.JSON(200, newResponse(resp))
+}
+
+// clears the session in the database
+func (s *Server) logoutUser(c echo.Context) error {
+	/* create a swagger documentation*/
+	// logout user
+	//
+	// swagger:operation DELETE /auth/clear auth logoutUser
+	//
+	// ---
+	//
+	// consumes:
+	// - application/json
+	//
+	// produces:
+	// - application/json
+	//
+	// parameters:
+	// - name: body
+	//   in: body
+	//   description: payload needed for logout
+	//   required: true
+	//   schema:
+	//     "$ref": "#/definitions/logoutRequest"
+	//
+	// responses:
+	//  200:
+	//	  description: Logout successful
+	//	  schema:
+	//	     type: object
+	//		 	"$ref": "#/definitions/SuccessResponse"
+	//  400:
+	//	  description: Bad request
+	//	  schema:
+	//	     type: object
+	//		 	"$ref": "#/definitions/BadRequestResponse"
+	//  500:
+	//	  description: Internal server error
+	//	  schema:
+	//	     type: object
+	//		 	"$ref": "#/definitions/InternalErrorResponse"
+
+	var data logoutRequest
+
+	if err := c.Bind(&data); err != nil {
+		return c.JSON(http.StatusBadRequest, newError(err.Error()))
+	}
+
+	if err := c.Validate(&data); err != nil {
+		return c.JSON(http.StatusBadRequest, err)
+	}
+
+	deletedSession, err := s.store.DeleteSession(c.Request().Context(), data.SessionId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return c.JSON(http.StatusNotFound, NOT_FOUND)
+		}
+		return c.JSON(http.StatusInternalServerError, INTERNAL_ERROR)
+	}
+
+	return c.JSON(http.StatusOK, newResponse(deletedSession))
 }
