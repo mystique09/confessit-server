@@ -64,6 +64,54 @@
         }
       }
     },
+    "/auth/clear": {
+      "delete": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "operationId": "logoutUser",
+        "parameters": [
+          {
+            "description": "payload needed for logout",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/logoutRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logout successful",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      }
+    },
     "/auth/refresh": {
       "post": {
         "consumes": [
@@ -1135,6 +1183,17 @@
         },
         "user_identity": {
           "$ref": "#/definitions/UserIdentity"
+        }
+      },
+      "x-go-package": "cnfs/handler"
+    },
+    "logoutRequest": {
+      "type": "object",
+      "properties": {
+        "session_id": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "SessionId"
         }
       },
       "x-go-package": "cnfs/handler"
