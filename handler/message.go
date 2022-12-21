@@ -236,11 +236,59 @@ func (s *Server) getMessageById(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, INTERNAL_ERROR)
 	}
 
-	updateStatusParam := db.UpdateMessageStatusParams{
-		ID:         msg.ID,
-		ReceiverID: msg.ReceiverID,
+	return c.JSON(200, newResponse(msg))
+}
+
+func (s *Server) updateMessage(c echo.Context) error {
+	// Update a message.
+	// swagger:operation PUT /messages/{id} messages updateMessage
+	//
+	// ---
+	// produces:
+	// - application/json
+	// consumes:
+	// - application/json
+	//
+	// parameters:
+	// - name: id
+	//   in: path
+	//   description: the message id
+	//   required: true
+	//   type: string
+	//   format: uuid
+	//
+	// security:
+	// - key: []
+	//
+	// responses:
+	//  200:
+	//	  description: Success response with user information.
+	//	  schema:
+	//	     type: object
+	//		 	"$ref": "#/definitions/SuccessResponse"
+	//  400:
+	//	  description: Bad request.
+	//	  schema:
+	//	     type: object
+	//		 	"$ref": "#/definitions/BadRequestResponse"
+	//  500:
+	//	  description: Internal error.
+	//	  schema:
+	//	     type: object
+	//		 	"$ref": "#/definitions/InternalErrorResponse"
+
+	id := c.Param("id")
+	messageId, err := uuid.Parse(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, newError(err.Error()))
 	}
-	_, err = s.store.UpdateMessageStatus(c.Request().Context(), updateStatusParam)
+
+	tokenPayload, ok := c.Get("user").(*token.Payload)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, UNAUTHORIZED)
+	}
+
+	msg, err := s.store.GetMessageById(c.Request().Context(), messageId)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return c.JSON(http.StatusNotFound, NOT_FOUND)
@@ -248,7 +296,22 @@ func (s *Server) getMessageById(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, INTERNAL_ERROR)
 	}
 
-	return c.JSON(200, newResponse(msg))
+	if msg.ReceiverID != tokenPayload.UserId {
+		return c.JSON(http.StatusUnauthorized, UNAUTHORIZED)
+	}
+
+	message, err := s.store.UpdateMessageStatus(c.Request().Context(), db.UpdateMessageStatusParams{
+		ID:         messageId,
+		ReceiverID: tokenPayload.UserId,
+	})
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return c.JSON(http.StatusNotFound, NOT_FOUND)
+		}
+		return c.JSON(http.StatusInternalServerError, INTERNAL_ERROR)
+	}
+
+	return c.JSON(200, newResponse(message))
 }
 
 func (s *Server) deleteMessage(c echo.Context) error {
