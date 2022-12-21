@@ -120,6 +120,7 @@ func (s *Server) setupRouter() {
 	messages := e.Group("/api/v1/messages")
 	messages.GET("/:id", s.getMessageById, s.authMiddleware)
 	messages.POST("", s.createMessage)
+	messages.PUT("/:id", s.updateMessage, s.authMiddleware)
 	messages.DELETE("/:id", s.deleteMessage, s.authMiddleware)
 
 	posts := e.Group("/api/v1/posts")
