@@ -315,6 +315,43 @@ func (s *Server) updateMessage(c echo.Context) error {
 }
 
 func (s *Server) deleteMessage(c echo.Context) error {
+	// Delete a message.
+	// swagger:operation DELETE /messages/{id} messages deleteMessage
+	//
+	// ---
+	// produces:
+	// - application/json
+	// consumes:
+	// - application/json
+	//
+	// parameters:
+	// - name: id
+	//   in: path
+	//   description: the message id
+	//   required: true
+	//   type: string
+	//   format: uuid
+	//
+	// security:
+	// - key: []
+	//
+	// responses:
+	//  200:
+	//	  description: Success response with user information.
+	//	  schema:
+	//	     type: object
+	//		 	"$ref": "#/definitions/SuccessResponse"
+	//  400:
+	//	  description: Bad request.
+	//	  schema:
+	//	     type: object
+	//		 	"$ref": "#/definitions/BadRequestResponse"
+	//  500:
+	//	  description: Internal error.
+	//	  schema:
+	//	     type: object
+	//		 	"$ref": "#/definitions/InternalErrorResponse"
+
 	id := c.Param("id")
 	msgId, err := uuid.Parse(id)
 	if err != nil {
