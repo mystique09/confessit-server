@@ -327,6 +327,56 @@
             }
           }
         }
+      },
+      "put": {
+        "security": [
+          {
+            "key": []
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "messages"
+        ],
+        "operationId": "updateMessage",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "uuid",
+            "description": "the message id",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response with user information.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "500": {
+            "description": "Internal error.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
       }
     },
     "/posts": {
