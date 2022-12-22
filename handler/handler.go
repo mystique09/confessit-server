@@ -116,6 +116,7 @@ func (s *Server) setupRouter() {
 	users.GET("/:id/messages", s.listMessages, s.authMiddleware)
 	users.PATCH("/:id", s.updateUser, s.authMiddleware)
 	users.DELETE("/:id", s.deleteUser, s.authMiddleware)
+	users.GET("/one/:username", s.getUserByUsername)
 
 	messages := e.Group("/api/v1/messages")
 	messages.GET("/:id", s.getMessageById, s.authMiddleware)
