@@ -387,6 +387,91 @@ func TestGetUserById(t *testing.T) {
 	}
 }
 
+func TestGetUserByUsername(t *testing.T) {
+	_, user := RandomUser(t)
+
+	testCases := []testCase{
+		{
+			name:    "OK",
+			payload: user.Username,
+			buildStubs: func(store *mock.MockStore) {
+				store.EXPECT().GetUserByUsername(gomock.Any(), gomock.Eq(user.Username)).Times(1).Return(user, nil)
+			},
+			checkResponse: func(rec *httptest.ResponseRecorder) {
+				require.Equal(t, 200, rec.Code)
+
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+
+				require.NoError(t, json.Unmarshal(body, &resp))
+				require.NotNil(t, resp.Data)
+			},
+		},
+		{
+			name:    "NOT FOUND",
+			payload: user.Username,
+			buildStubs: func(store *mock.MockStore) {
+				store.EXPECT().GetUserByUsername(gomock.Any(), gomock.Eq(user.Username)).Times(1).Return(db.User{}, sql.ErrNoRows)
+			},
+			checkResponse: func(rec *httptest.ResponseRecorder) {
+				require.Equal(t, 400, rec.Code)
+
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+
+				require.NoError(t, json.Unmarshal(body, &resp))
+
+				require.Equal(t, NOT_FOUND.Err, resp.Err)
+			},
+		},
+		{
+			name:    "INTERNAL ERROR",
+			payload: user.Username,
+			buildStubs: func(store *mock.MockStore) {
+				store.EXPECT().GetUserByUsername(gomock.Any(), gomock.Eq(user.Username)).Times(1).Return(db.User{}, sql.ErrConnDone)
+			},
+			checkResponse: func(rec *httptest.ResponseRecorder) {
+				require.Equal(t, 500, rec.Code)
+
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+
+				require.NoError(t, json.Unmarshal(body, &resp))
+				require.NotNil(t, resp.Err)
+			},
+		},
+	}
+
+	for i := range testCases {
+		tc := testCases[i]
+
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			store := mock.NewMockStore(ctrl)
+			tc.buildStubs(store)
+
+			server, err := NewServer(store, cfg)
+			require.NoError(t, err)
+
+			rec := httptest.NewRecorder()
+			url := fmt.Sprintf("/api/v1/users/one/%s", tc.payload)
+
+			req := httptest.NewRequest(http.MethodGet, url, nil)
+
+			server.router.ServeHTTP(rec, req)
+			tc.checkResponse(rec)
+		})
+	}
+}
+
 type eqUpdateUserParamsMatcher struct {
 	arg      db.UpdateUserPasswordParams
 	password string
