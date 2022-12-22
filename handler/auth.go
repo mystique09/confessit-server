@@ -114,6 +114,17 @@ func (s *Server) loginUser(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, newError(err.Error()))
 	}
 
+	// set refresh token as cookie
+	cookie := new(http.Cookie)
+	cookie.Path = "/"
+	cookie.Domain = c.Request().URL.String()
+	cookie.Name = "refresh_token_cookie"
+	cookie.Value = refreshToken
+	cookie.MaxAge = refreshTokenPayload.ExpiredAt.Second()
+	cookie.HttpOnly = true
+	cookie.Secure = true
+	c.SetCookie(cookie)
+
 	newSessionArg := db.CreateSessionParams{
 		ID:           refreshTokenPayload.Id,
 		UserID:       user.ID,
