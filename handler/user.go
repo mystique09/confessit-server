@@ -258,6 +258,20 @@ func (s *Server) getUserById(c echo.Context) error {
 	return c.JSON(200, newResponse(user))
 }
 
+func (s *Server) getUserByUsername(c echo.Context) error {
+	username := c.Param("username")
+
+	user, err := s.store.GetUserByUsername(c.Request().Context(), username)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return c.JSON(http.StatusBadRequest, NOT_FOUND)
+		}
+		return c.JSON(http.StatusInternalServerError, INTERNAL_ERROR)
+	}
+
+	return c.JSON(200, newResponse(user))
+}
+
 // Update user by id.
 func (s *Server) updateUser(c echo.Context) error {
 	// Update user by id.
