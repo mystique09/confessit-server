@@ -127,14 +127,16 @@ func (s *Server) setupRouter() {
 	posts := e.Group("/api/v1/posts")
 	posts.GET("", s.listAllPosts)
 	posts.GET("/:id", s.getPostById)
-	posts.GET("/:id/comments", s.listAllComments)
 	posts.POST("", s.createNewPost, s.authMiddleware)
 	posts.PATCH("/:id", s.updatePost, s.authMiddleware)
 	posts.DELETE("/:id", s.deletePost, s.authMiddleware)
+	posts.GET("/:id/comments", s.listAllComments)
 
 	comments := e.Group("/api/v1/comments")
 	comments.GET("/:id", s.getCommentById)
 	comments.POST("", s.createComment, s.authMiddleware)
+	comments.PUT("/:id", s.updateComment, s.authMiddleware)
+	comments.DELETE("/:id", s.deleteComment, s.authMiddleware)
 
 	s.router = e
 }
