@@ -39,23 +39,9 @@ CREATE TABLE "comments" (
   "content" varchar NOT NULL,
   "user_identity_id" uuid NOT NULL,
   "post_id" uuid NOT NULL,
-  "parent_id" uuid,
+  "parent_id" uuid NOT NULL,
   "created_at" date NOT NULL DEFAULT (now()),
   "updated_at" date NOT NULL DEFAULT (now())
-);
-
-CREATE TABLE "likes" (
-  "id" uuid UNIQUE PRIMARY KEY NOT NULL,
-  "user_identity_id" uuid NOT NULL,
-  "post_id" uuid NOT NULL,
-  "type" satisfaction
-);
-
-CREATE TABLE "comment_likes" (
-  "id" uuid UNIQUE PRIMARY KEY NOT NULL,
-  "user_identity_id" uuid NOT NULL,
-  "comment_id" uuid NOT NULL,
-  "type" satisfaction
 );
 
 CREATE TABLE "sessions" (
@@ -81,13 +67,5 @@ ALTER TABLE "comments" ADD FOREIGN KEY ("user_identity_id") REFERENCES "user_ide
 ALTER TABLE "comments" ADD FOREIGN KEY ("post_id") REFERENCES "posts" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 ALTER TABLE "comments" ADD FOREIGN KEY ("parent_id") REFERENCES "comments" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-
-ALTER TABLE "likes" ADD FOREIGN KEY ("user_identity_id") REFERENCES "user_identities" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-
-ALTER TABLE "likes" ADD FOREIGN KEY ("post_id") REFERENCES "posts" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-
-ALTER TABLE "comment_likes" ADD FOREIGN KEY ("user_identity_id") REFERENCES "user_identities" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-
-ALTER TABLE "comment_likes" ADD FOREIGN KEY ("comment_id") REFERENCES "comments" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 ALTER TABLE "sessions" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
