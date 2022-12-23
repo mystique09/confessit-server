@@ -18,21 +18,21 @@ OFFSET $1;
 
 -- name: CreateUser :one
 INSERT INTO "users" (
-    id, username, password
+    id, username, password, created_at, updated_at
 ) VALUES (
-    $1, $2, $3
+    $1, $2, $3, $4, $5
 ) RETURNING id;
 
 -- name: UpdateUsername :one
 UPDATE "users"
-SET username = $1
-WHERE id = $2
+SET username = $1, updated_at = $2
+WHERE id = $3
 RETURNING id;
 
 -- name: UpdateUserPassword :one
 UPDATE "users"
-SET password = $1
-WHERE id = $2
+SET password = $1, updated_at = $2
+WHERE id = $3
 RETURNING id;
 
 -- name: DeleteOneUser :one

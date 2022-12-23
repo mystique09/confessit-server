@@ -13,15 +13,15 @@ OFFSET $2;
 
 -- name: CreateMessage :one
 INSERT INTO "messages" (
-    id, receiver_id, content
+    id, receiver_id, content, created_at, updated_at
 ) VALUES (
-    $1, $2, $3
+    $1, $2, $3, $4, $5
 ) RETURNING *;
 
 -- name: UpdateMessageStatus :one
 UPDATE "messages"
-SET seen = TRUE
-WHERE id = $1 AND receiver_id = $2
+SET seen = TRUE, updated_at = $1
+WHERE id = $2 AND receiver_id = $3
 RETURNING id;
 
 -- name: DeleteOneMessage :one
