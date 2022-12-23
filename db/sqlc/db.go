@@ -30,17 +30,11 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.createCommentStmt, err = db.PrepareContext(ctx, createComment); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateComment: %w", err)
 	}
-	if q.createCommentLikeStmt, err = db.PrepareContext(ctx, createCommentLike); err != nil {
-		return nil, fmt.Errorf("error preparing query CreateCommentLike: %w", err)
-	}
 	if q.createMessageStmt, err = db.PrepareContext(ctx, createMessage); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateMessage: %w", err)
 	}
 	if q.createPostStmt, err = db.PrepareContext(ctx, createPost); err != nil {
 		return nil, fmt.Errorf("error preparing query CreatePost: %w", err)
-	}
-	if q.createPostLikeStmt, err = db.PrepareContext(ctx, createPostLike); err != nil {
-		return nil, fmt.Errorf("error preparing query CreatePostLike: %w", err)
 	}
 	if q.createSessionStmt, err = db.PrepareContext(ctx, createSession); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateSession: %w", err)
@@ -54,9 +48,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteCommentStmt, err = db.PrepareContext(ctx, deleteComment); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteComment: %w", err)
 	}
-	if q.deleteCommentLikeStmt, err = db.PrepareContext(ctx, deleteCommentLike); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteCommentLike: %w", err)
-	}
 	if q.deleteOneMessageStmt, err = db.PrepareContext(ctx, deleteOneMessage); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteOneMessage: %w", err)
 	}
@@ -65,9 +56,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.deletePostStmt, err = db.PrepareContext(ctx, deletePost); err != nil {
 		return nil, fmt.Errorf("error preparing query DeletePost: %w", err)
-	}
-	if q.deletePostLikeStmt, err = db.PrepareContext(ctx, deletePostLike); err != nil {
-		return nil, fmt.Errorf("error preparing query DeletePostLike: %w", err)
 	}
 	if q.deleteSessionStmt, err = db.PrepareContext(ctx, deleteSession); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteSession: %w", err)
@@ -99,14 +87,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getUserIdentityByUserIdStmt, err = db.PrepareContext(ctx, getUserIdentityByUserId); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserIdentityByUserId: %w", err)
 	}
-	if q.listAllCommentLikesStmt, err = db.PrepareContext(ctx, listAllCommentLikes); err != nil {
-		return nil, fmt.Errorf("error preparing query ListAllCommentLikes: %w", err)
-	}
 	if q.listAllCommentsStmt, err = db.PrepareContext(ctx, listAllComments); err != nil {
 		return nil, fmt.Errorf("error preparing query ListAllComments: %w", err)
-	}
-	if q.listAllPostLikesStmt, err = db.PrepareContext(ctx, listAllPostLikes); err != nil {
-		return nil, fmt.Errorf("error preparing query ListAllPostLikes: %w", err)
 	}
 	if q.listAllPostsStmt, err = db.PrepareContext(ctx, listAllPosts); err != nil {
 		return nil, fmt.Errorf("error preparing query ListAllPosts: %w", err)
@@ -147,11 +129,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing createCommentStmt: %w", cerr)
 		}
 	}
-	if q.createCommentLikeStmt != nil {
-		if cerr := q.createCommentLikeStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing createCommentLikeStmt: %w", cerr)
-		}
-	}
 	if q.createMessageStmt != nil {
 		if cerr := q.createMessageStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createMessageStmt: %w", cerr)
@@ -160,11 +137,6 @@ func (q *Queries) Close() error {
 	if q.createPostStmt != nil {
 		if cerr := q.createPostStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createPostStmt: %w", cerr)
-		}
-	}
-	if q.createPostLikeStmt != nil {
-		if cerr := q.createPostLikeStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing createPostLikeStmt: %w", cerr)
 		}
 	}
 	if q.createSessionStmt != nil {
@@ -187,11 +159,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteCommentStmt: %w", cerr)
 		}
 	}
-	if q.deleteCommentLikeStmt != nil {
-		if cerr := q.deleteCommentLikeStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteCommentLikeStmt: %w", cerr)
-		}
-	}
 	if q.deleteOneMessageStmt != nil {
 		if cerr := q.deleteOneMessageStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteOneMessageStmt: %w", cerr)
@@ -205,11 +172,6 @@ func (q *Queries) Close() error {
 	if q.deletePostStmt != nil {
 		if cerr := q.deletePostStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deletePostStmt: %w", cerr)
-		}
-	}
-	if q.deletePostLikeStmt != nil {
-		if cerr := q.deletePostLikeStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deletePostLikeStmt: %w", cerr)
 		}
 	}
 	if q.deleteSessionStmt != nil {
@@ -262,19 +224,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getUserIdentityByUserIdStmt: %w", cerr)
 		}
 	}
-	if q.listAllCommentLikesStmt != nil {
-		if cerr := q.listAllCommentLikesStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listAllCommentLikesStmt: %w", cerr)
-		}
-	}
 	if q.listAllCommentsStmt != nil {
 		if cerr := q.listAllCommentsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listAllCommentsStmt: %w", cerr)
-		}
-	}
-	if q.listAllPostLikesStmt != nil {
-		if cerr := q.listAllPostLikesStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listAllPostLikesStmt: %w", cerr)
 		}
 	}
 	if q.listAllPostsStmt != nil {
@@ -358,19 +310,15 @@ type Queries struct {
 	tx                          *sql.Tx
 	blockSessionStmt            *sql.Stmt
 	createCommentStmt           *sql.Stmt
-	createCommentLikeStmt       *sql.Stmt
 	createMessageStmt           *sql.Stmt
 	createPostStmt              *sql.Stmt
-	createPostLikeStmt          *sql.Stmt
 	createSessionStmt           *sql.Stmt
 	createUserStmt              *sql.Stmt
 	createUserIdentityStmt      *sql.Stmt
 	deleteCommentStmt           *sql.Stmt
-	deleteCommentLikeStmt       *sql.Stmt
 	deleteOneMessageStmt        *sql.Stmt
 	deleteOneUserStmt           *sql.Stmt
 	deletePostStmt              *sql.Stmt
-	deletePostLikeStmt          *sql.Stmt
 	deleteSessionStmt           *sql.Stmt
 	deleteSessionByUserIdStmt   *sql.Stmt
 	getCommentStmt              *sql.Stmt
@@ -381,9 +329,7 @@ type Queries struct {
 	getUserByUsernameStmt       *sql.Stmt
 	getUserIdentityByIdStmt     *sql.Stmt
 	getUserIdentityByUserIdStmt *sql.Stmt
-	listAllCommentLikesStmt     *sql.Stmt
 	listAllCommentsStmt         *sql.Stmt
-	listAllPostLikesStmt        *sql.Stmt
 	listAllPostsStmt            *sql.Stmt
 	listMessageStmt             *sql.Stmt
 	listUsersStmt               *sql.Stmt
@@ -400,19 +346,15 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		tx:                          tx,
 		blockSessionStmt:            q.blockSessionStmt,
 		createCommentStmt:           q.createCommentStmt,
-		createCommentLikeStmt:       q.createCommentLikeStmt,
 		createMessageStmt:           q.createMessageStmt,
 		createPostStmt:              q.createPostStmt,
-		createPostLikeStmt:          q.createPostLikeStmt,
 		createSessionStmt:           q.createSessionStmt,
 		createUserStmt:              q.createUserStmt,
 		createUserIdentityStmt:      q.createUserIdentityStmt,
 		deleteCommentStmt:           q.deleteCommentStmt,
-		deleteCommentLikeStmt:       q.deleteCommentLikeStmt,
 		deleteOneMessageStmt:        q.deleteOneMessageStmt,
 		deleteOneUserStmt:           q.deleteOneUserStmt,
 		deletePostStmt:              q.deletePostStmt,
-		deletePostLikeStmt:          q.deletePostLikeStmt,
 		deleteSessionStmt:           q.deleteSessionStmt,
 		deleteSessionByUserIdStmt:   q.deleteSessionByUserIdStmt,
 		getCommentStmt:              q.getCommentStmt,
@@ -423,9 +365,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getUserByUsernameStmt:       q.getUserByUsernameStmt,
 		getUserIdentityByIdStmt:     q.getUserIdentityByIdStmt,
 		getUserIdentityByUserIdStmt: q.getUserIdentityByUserIdStmt,
-		listAllCommentLikesStmt:     q.listAllCommentLikesStmt,
 		listAllCommentsStmt:         q.listAllCommentsStmt,
-		listAllPostLikesStmt:        q.listAllPostLikesStmt,
 		listAllPostsStmt:            q.listAllPostsStmt,
 		listMessageStmt:             q.listMessageStmt,
 		listUsersStmt:               q.listUsersStmt,

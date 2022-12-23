@@ -7,26 +7,35 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO "users" (
-    id, username, password
+    id, username, password, created_at, updated_at
 ) VALUES (
-    $1, $2, $3
+    $1, $2, $3, $4, $5
 ) RETURNING id
 `
 
 type CreateUserParams struct {
-	ID       uuid.UUID `json:"id"`
-	Username string    `json:"username"`
-	Password string    `json:"password"`
+	ID        uuid.UUID `json:"id"`
+	Username  string    `json:"username"`
+	Password  string    `json:"password"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (uuid.UUID, error) {
-	row := q.queryRow(ctx, q.createUserStmt, createUser, arg.ID, arg.Username, arg.Password)
+	row := q.queryRow(ctx, q.createUserStmt, createUser,
+		arg.ID,
+		arg.Username,
+		arg.Password,
+		arg.CreatedAt,
+		arg.UpdatedAt,
+	)
 	var id uuid.UUID
 	err := row.Scan(&id)
 	return id, err
@@ -122,18 +131,19 @@ func (q *Queries) ListUsers(ctx context.Context, offset int32) ([]User, error) {
 
 const updateUserPassword = `-- name: UpdateUserPassword :one
 UPDATE "users"
-SET password = $1
-WHERE id = $2
+SET password = $1, updated_at = $2
+WHERE id = $3
 RETURNING id
 `
 
 type UpdateUserPasswordParams struct {
-	Password string    `json:"password"`
-	ID       uuid.UUID `json:"id"`
+	Password  string    `json:"password"`
+	UpdatedAt time.Time `json:"updated_at"`
+	ID        uuid.UUID `json:"id"`
 }
 
 func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (uuid.UUID, error) {
-	row := q.queryRow(ctx, q.updateUserPasswordStmt, updateUserPassword, arg.Password, arg.ID)
+	row := q.queryRow(ctx, q.updateUserPasswordStmt, updateUserPassword, arg.Password, arg.UpdatedAt, arg.ID)
 	var id uuid.UUID
 	err := row.Scan(&id)
 	return id, err
@@ -141,18 +151,19 @@ func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPassword
 
 const updateUsername = `-- name: UpdateUsername :one
 UPDATE "users"
-SET username = $1
-WHERE id = $2
+SET username = $1, updated_at = $2
+WHERE id = $3
 RETURNING id
 `
 
 type UpdateUsernameParams struct {
-	Username string    `json:"username"`
-	ID       uuid.UUID `json:"id"`
+	Username  string    `json:"username"`
+	UpdatedAt time.Time `json:"updated_at"`
+	ID        uuid.UUID `json:"id"`
 }
 
 func (q *Queries) UpdateUsername(ctx context.Context, arg UpdateUsernameParams) (uuid.UUID, error) {
-	row := q.queryRow(ctx, q.updateUsernameStmt, updateUsername, arg.Username, arg.ID)
+	row := q.queryRow(ctx, q.updateUsernameStmt, updateUsername, arg.Username, arg.UpdatedAt, arg.ID)
 	var id uuid.UUID
 	err := row.Scan(&id)
 	return id, err

@@ -55,27 +55,13 @@ func (ns NullSatisfaction) Value() (driver.Value, error) {
 }
 
 type Comment struct {
-	ID             uuid.UUID     `json:"id"`
-	Content        string        `json:"content"`
-	UserIdentityID uuid.UUID     `json:"user_identity_id"`
-	PostID         uuid.UUID     `json:"post_id"`
-	ParentID       uuid.NullUUID `json:"parent_id"`
-	CreatedAt      time.Time     `json:"created_at"`
-	UpdatedAt      time.Time     `json:"updated_at"`
-}
-
-type CommentLike struct {
-	ID             uuid.UUID        `json:"id"`
-	UserIdentityID uuid.UUID        `json:"user_identity_id"`
-	CommentID      uuid.UUID        `json:"comment_id"`
-	Type           NullSatisfaction `json:"type"`
-}
-
-type Like struct {
-	ID             uuid.UUID        `json:"id"`
-	UserIdentityID uuid.UUID        `json:"user_identity_id"`
-	PostID         uuid.UUID        `json:"post_id"`
-	Type           NullSatisfaction `json:"type"`
+	ID             uuid.UUID `json:"id"`
+	Content        string    `json:"content"`
+	UserIdentityID uuid.UUID `json:"user_identity_id"`
+	PostID         uuid.UUID `json:"post_id"`
+	ParentID       uuid.UUID `json:"parent_id"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 type Message struct {

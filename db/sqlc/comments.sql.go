@@ -13,15 +13,27 @@ import (
 )
 
 const createComment = `-- name: CreateComment :one
-INSERT INTO "comments" (id, content, user_identity_id, post_id, parent_id) VALUES ($1, $2, $3, $4, $5) RETURNING id, content, user_identity_id, post_id, parent_id, created_at, updated_at
+INSERT INTO "comments"(
+	id,
+ 	content,
+	user_identity_id, 
+	post_id, 
+	parent_id, 
+	created_at, 
+	updated_at
+) VALUES (
+	$1, $2, $3, $4, $5, $6, $7
+) RETURNING id, content, user_identity_id, post_id, parent_id, created_at, updated_at
 `
 
 type CreateCommentParams struct {
-	ID             uuid.UUID     `json:"id"`
-	Content        string        `json:"content"`
-	UserIdentityID uuid.UUID     `json:"user_identity_id"`
-	PostID         uuid.UUID     `json:"post_id"`
-	ParentID       uuid.NullUUID `json:"parent_id"`
+	ID             uuid.UUID `json:"id"`
+	Content        string    `json:"content"`
+	UserIdentityID uuid.UUID `json:"user_identity_id"`
+	PostID         uuid.UUID `json:"post_id"`
+	ParentID       uuid.UUID `json:"parent_id"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 func (q *Queries) CreateComment(ctx context.Context, arg CreateCommentParams) (Comment, error) {
@@ -31,6 +43,8 @@ func (q *Queries) CreateComment(ctx context.Context, arg CreateCommentParams) (C
 		arg.UserIdentityID,
 		arg.PostID,
 		arg.ParentID,
+		arg.CreatedAt,
+		arg.UpdatedAt,
 	)
 	var i Comment
 	err := row.Scan(
@@ -46,22 +60,13 @@ func (q *Queries) CreateComment(ctx context.Context, arg CreateCommentParams) (C
 }
 
 const deleteComment = `-- name: DeleteComment :one
-DELETE FROM "comments" WHERE id = $1 RETURNING id, content, user_identity_id, post_id, parent_id, created_at, updated_at
+DELETE FROM "comments" WHERE id = $1 RETURNING id
 `
 
-func (q *Queries) DeleteComment(ctx context.Context, id uuid.UUID) (Comment, error) {
+func (q *Queries) DeleteComment(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
 	row := q.queryRow(ctx, q.deleteCommentStmt, deleteComment, id)
-	var i Comment
-	err := row.Scan(
-		&i.ID,
-		&i.Content,
-		&i.UserIdentityID,
-		&i.PostID,
-		&i.ParentID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
+	err := row.Scan(&id)
+	return id, err
 }
 
 const getComment = `-- name: GetComment :one
@@ -119,7 +124,7 @@ func (q *Queries) ListAllComments(ctx context.Context, postID uuid.UUID) ([]Comm
 }
 
 const updateComment = `-- name: UpdateComment :one
-UPDATE "comments" SET content = $1, updated_at = $2 WHERE id = $3 RETURNING id, content, user_identity_id, post_id, parent_id, created_at, updated_at
+UPDATE "comments" SET content = $1, updated_at = $2 WHERE id = $3 RETURNING id
 `
 
 type UpdateCommentParams struct {
@@ -128,17 +133,9 @@ type UpdateCommentParams struct {
 	ID        uuid.UUID `json:"id"`
 }
 
-func (q *Queries) UpdateComment(ctx context.Context, arg UpdateCommentParams) (Comment, error) {
+func (q *Queries) UpdateComment(ctx context.Context, arg UpdateCommentParams) (uuid.UUID, error) {
 	row := q.queryRow(ctx, q.updateCommentStmt, updateComment, arg.Content, arg.UpdatedAt, arg.ID)
-	var i Comment
-	err := row.Scan(
-		&i.ID,
-		&i.Content,
-		&i.UserIdentityID,
-		&i.PostID,
-		&i.ParentID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
 }

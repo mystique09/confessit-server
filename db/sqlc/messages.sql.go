@@ -7,15 +7,16 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
 
 const createMessage = `-- name: CreateMessage :one
 INSERT INTO "messages" (
-    id, receiver_id, content
+    id, receiver_id, content, created_at, updated_at
 ) VALUES (
-    $1, $2, $3
+    $1, $2, $3, $4, $5
 ) RETURNING id, receiver_id, content, seen, created_at, updated_at
 `
 
@@ -23,10 +24,18 @@ type CreateMessageParams struct {
 	ID         uuid.UUID `json:"id"`
 	ReceiverID uuid.UUID `json:"receiver_id"`
 	Content    string    `json:"content"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
 }
 
 func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (Message, error) {
-	row := q.queryRow(ctx, q.createMessageStmt, createMessage, arg.ID, arg.ReceiverID, arg.Content)
+	row := q.queryRow(ctx, q.createMessageStmt, createMessage,
+		arg.ID,
+		arg.ReceiverID,
+		arg.Content,
+		arg.CreatedAt,
+		arg.UpdatedAt,
+	)
 	var i Message
 	err := row.Scan(
 		&i.ID,
@@ -123,18 +132,19 @@ func (q *Queries) ListMessage(ctx context.Context, arg ListMessageParams) ([]Mes
 
 const updateMessageStatus = `-- name: UpdateMessageStatus :one
 UPDATE "messages"
-SET seen = TRUE
-WHERE id = $1 AND receiver_id = $2
+SET seen = TRUE, updated_at = $1
+WHERE id = $2 AND receiver_id = $3
 RETURNING id
 `
 
 type UpdateMessageStatusParams struct {
+	UpdatedAt  time.Time `json:"updated_at"`
 	ID         uuid.UUID `json:"id"`
 	ReceiverID uuid.UUID `json:"receiver_id"`
 }
 
 func (q *Queries) UpdateMessageStatus(ctx context.Context, arg UpdateMessageStatusParams) (uuid.UUID, error) {
-	row := q.queryRow(ctx, q.updateMessageStatusStmt, updateMessageStatus, arg.ID, arg.ReceiverID)
+	row := q.queryRow(ctx, q.updateMessageStatusStmt, updateMessageStatus, arg.UpdatedAt, arg.ID, arg.ReceiverID)
 	var id uuid.UUID
 	err := row.Scan(&id)
 	return id, err
