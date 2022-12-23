@@ -229,6 +229,184 @@
         }
       }
     },
+    "/comments": {
+      "post": {
+        "security": [
+          {
+            "key": []
+          }
+        ],
+        "description": "Create a comment",
+        "tags": [
+          "comments"
+        ],
+        "summary": "Create a comment",
+        "operationId": "createComment",
+        "parameters": [
+          {
+            "description": "comment",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/createCommentRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/comments/{id}": {
+      "get": {
+        "description": "Get comment by id",
+        "tags": [
+          "comments"
+        ],
+        "summary": "Get comment by id",
+        "operationId": "getCommentById",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "comment id",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "key": []
+          }
+        ],
+        "description": "Update a comment",
+        "tags": [
+          "comments"
+        ],
+        "summary": "Update a comment",
+        "operationId": "updateComment",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "comment id",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "comment",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/updateCommentRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "key": []
+          }
+        ],
+        "description": "Delete a comment",
+        "tags": [
+          "comments"
+        ],
+        "summary": "Delete a comment",
+        "operationId": "deleteComment",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "comment id",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      }
+    },
     "/messages": {
       "post": {
         "consumes": [
@@ -660,6 +838,48 @@
             "description": "Unauthorized",
             "schema": {
               "$ref": "#/definitions/UnauthorizedResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/posts/{id}/comments": {
+      "get": {
+        "description": "List all comments of a post",
+        "tags": [
+          "comments"
+        ],
+        "summary": "List all comments of a post",
+        "operationId": "listAllComments",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "post id",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SuccessResponse"
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/BadRequestResponse"
             }
           },
           "500": {
@@ -1157,6 +1377,31 @@
       },
       "x-go-package": "cnfs/handler"
     },
+    "createCommentRequest": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string",
+          "x-go-name": "Content"
+        },
+        "parent_id": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "ParentId"
+        },
+        "post_id": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "PostId"
+        },
+        "user_identity_id": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "UserIdentityId"
+        }
+      },
+      "x-go-package": "cnfs/handler"
+    },
     "createMessageRequest": {
       "type": "object",
       "required": [
@@ -1308,6 +1553,16 @@
           "description": "The refresh token",
           "type": "string",
           "x-go-name": "RefreshToken"
+        }
+      },
+      "x-go-package": "cnfs/handler"
+    },
+    "updateCommentRequest": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string",
+          "x-go-name": "Content"
         }
       },
       "x-go-package": "cnfs/handler"
