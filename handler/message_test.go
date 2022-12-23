@@ -32,6 +32,8 @@ func (e *eqCreateMessageParams) Matches(x interface{}) bool {
 	}
 
 	e.arg.ID = arg.ID
+	e.arg.CreatedAt = arg.CreatedAt
+	e.arg.UpdatedAt = arg.UpdatedAt
 
 	return reflect.DeepEqual(e.arg, arg)
 }
@@ -57,6 +59,8 @@ func TestServer_createMessage(t *testing.T) {
 					ID:         msg.ID,
 					ReceiverID: user.ID,
 					Content:    msg.Content,
+					CreatedAt:  msg.CreatedAt,
+					UpdatedAt:  msg.UpdatedAt,
 				}
 				store.EXPECT().GetUserById(gomock.Any(), gomock.Eq(user.ID)).Times(1).Return(user, nil)
 				store.EXPECT().CreateMessage(gomock.Any(), EqCreateMessageParams(&arg, arg.ID)).Times(1).Return(msg, nil)
@@ -127,6 +131,8 @@ func TestServer_createMessage(t *testing.T) {
 		tc := testCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -256,6 +262,8 @@ func TestListMessages(t *testing.T) {
 		tc := testCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -322,6 +330,8 @@ func TestListMessagesUnauthorized(t *testing.T) {
 		tc := testCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -424,6 +434,8 @@ func TestGetMessageById(t *testing.T) {
 		tc := testCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -446,6 +458,29 @@ func TestGetMessageById(t *testing.T) {
 	}
 }
 
+type eqUpdateMessageParams struct {
+	arg db.UpdateMessageStatusParams
+}
+
+func (e eqUpdateMessageParams) Matches(x interface{}) bool {
+	arg, ok := x.(db.UpdateMessageStatusParams)
+	if !ok {
+		return false
+	}
+
+	e.arg.UpdatedAt = arg.UpdatedAt
+
+	return arg.ID == e.arg.ID && arg.ReceiverID == e.arg.ReceiverID && arg.UpdatedAt == e.arg.UpdatedAt
+}
+
+func (e eqUpdateMessageParams) String() string {
+	return fmt.Sprintf("is equal to %v", e.arg)
+}
+
+func EqUpdateMessageParams(arg *db.UpdateMessageStatusParams, id uuid.UUID) gomock.Matcher {
+	return &eqUpdateMessageParams{*arg}
+}
+
 func TestUpdateMessage(t *testing.T) {
 	// create a unit test for the /api/v1/messages/:id endpoint
 	_, user := RandomUser(t)
@@ -459,9 +494,10 @@ func TestUpdateMessage(t *testing.T) {
 				arg := db.UpdateMessageStatusParams{
 					ID:         message.ID,
 					ReceiverID: message.ReceiverID,
+					UpdatedAt:  message.UpdatedAt,
 				}
 				store.EXPECT().GetMessageById(gomock.Any(), gomock.Eq(message.ID)).Times(1).Return(message, nil)
-				store.EXPECT().UpdateMessageStatus(gomock.Any(), gomock.Eq(arg)).Times(1).Return(message.ID, nil)
+				store.EXPECT().UpdateMessageStatus(gomock.Any(), EqUpdateMessageParams(&arg, arg.ID)).Times(1).Return(message.ID, nil)
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
 				require.Equal(t, 200, rec.Code)
@@ -498,6 +534,7 @@ func TestUpdateMessage(t *testing.T) {
 				arg := db.UpdateMessageStatusParams{
 					ID:         message.ID,
 					ReceiverID: message.ReceiverID,
+					UpdatedAt:  message.UpdatedAt,
 				}
 				store.EXPECT().GetMessageById(gomock.Any(), gomock.Eq(message.ID)).Times(1).Return(db.Message{}, sql.ErrConnDone)
 				store.EXPECT().UpdateMessageStatus(gomock.Any(), gomock.Eq(arg)).Times(0)

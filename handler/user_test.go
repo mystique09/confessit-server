@@ -39,6 +39,8 @@ func (e *eqCreateUserParamsMatcher) Matches(x interface{}) bool {
 
 	e.arg.ID = arg.ID
 	e.arg.Password = arg.Password
+	e.arg.CreatedAt = arg.CreatedAt
+	e.arg.UpdatedAt = arg.UpdatedAt
 
 	return reflect.DeepEqual(e.arg, arg)
 }
@@ -59,15 +61,17 @@ func TestCreateUser(t *testing.T) {
 			name:    "OK",
 			payload: fmt.Sprintf(`{"username": %q, "password": %q}`, user.Username, password),
 			buildStubs: func(store *mock.MockStore) {
-				arg := db.CreateUserParams{
-					ID:       user.ID,
-					Username: user.Username,
-					Password: user.Password,
+				arg := &db.CreateUserParams{
+					ID:        user.ID,
+					Username:  user.Username,
+					Password:  user.Password,
+					CreatedAt: user.CreatedAt,
+					UpdatedAt: user.UpdatedAt,
 				}
 
 				store.
 					EXPECT().
-					CreateUser(gomock.Any(), EqCreateUserParams(&arg, password)).
+					CreateUser(gomock.Any(), EqCreateUserParams(arg, password)).
 					Times(1).
 					Return(user.ID, nil)
 				store.EXPECT().CreateUserIdentity(gomock.Any(), gomock.Any()).Times(1)
@@ -125,13 +129,15 @@ func TestCreateUser(t *testing.T) {
 			name:    "Already exist",
 			payload: fmt.Sprintf(`{"username": %q, "password": %q}`, user.Username, password),
 			buildStubs: func(store *mock.MockStore) {
-				arg := db.CreateUserParams{
-					ID:       user.ID,
-					Username: user.Username,
-					Password: user.Password,
+				arg := &db.CreateUserParams{
+					ID:        user.ID,
+					Username:  user.Username,
+					Password:  user.Password,
+					CreatedAt: user.CreatedAt,
+					UpdatedAt: user.UpdatedAt,
 				}
 
-				store.EXPECT().CreateUser(gomock.Any(), EqCreateUserParams(&arg, password)).Times(1).Return(user.ID, errors.New("unique violation"))
+				store.EXPECT().CreateUser(gomock.Any(), EqCreateUserParams(arg, password)).Times(1).Return(user.ID, errors.New("unique violation"))
 				store.EXPECT().CreateUserIdentity(gomock.Any(), gomock.Any()).Times(0)
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
@@ -171,6 +177,8 @@ func TestCreateUser(t *testing.T) {
 		tc := testCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -266,6 +274,8 @@ func TestListUsers(t *testing.T) {
 		tc := testCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -364,6 +374,8 @@ func TestGetUserById(t *testing.T) {
 		tc := testCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -452,6 +464,8 @@ func TestGetUserByUsername(t *testing.T) {
 		tc := testCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -490,6 +504,7 @@ func (e *eqUpdateUserParamsMatcher) Matches(x interface{}) bool {
 
 	e.arg.ID = arg.ID
 	e.arg.Password = arg.Password
+	e.arg.UpdatedAt = arg.UpdatedAt
 
 	return reflect.DeepEqual(e.arg, arg)
 }
@@ -500,6 +515,32 @@ func (e *eqUpdateUserParamsMatcher) String() string {
 
 func EqUpdateUserParams(arg *db.UpdateUserPasswordParams, password string) gomock.Matcher {
 	return &eqUpdateUserParamsMatcher{*arg, password}
+}
+
+type eqUpdateUsernameParamsMatcher struct {
+	arg      db.UpdateUsernameParams
+	password string
+}
+
+func (e *eqUpdateUsernameParamsMatcher) Matches(x interface{}) bool {
+	arg, ok := x.(db.UpdateUsernameParams)
+	if !ok {
+		return false
+	}
+
+	e.arg.ID = arg.ID
+	e.arg.Username = arg.Username
+	e.arg.UpdatedAt = arg.UpdatedAt
+
+	return reflect.DeepEqual(e.arg, arg)
+}
+
+func (e *eqUpdateUsernameParamsMatcher) String() string {
+	return fmt.Sprintf("matches arg %v and id %v", e.arg, e.password)
+}
+
+func EqUpdateUsernameParams(arg *db.UpdateUsernameParams, password string) gomock.Matcher {
+	return &eqUpdateUsernameParamsMatcher{*arg, password}
 }
 
 func TestUpdateUser(t *testing.T) {
@@ -514,12 +555,13 @@ func TestUpdateUser(t *testing.T) {
 			payload: fmt.Sprintf(`{"field": "username", "payload": %q, "session_id": %q}`, newUsername, session_id),
 			buildStubs: func(store *mock.MockStore) {
 				arg := db.UpdateUsernameParams{
-					ID:       user.ID,
-					Username: newUsername,
+					ID:        user.ID,
+					Username:  newUsername,
+					UpdatedAt: user.UpdatedAt,
 				}
 
 				store.EXPECT().GetSessionById(gomock.Any(), gomock.Any()).Times(1)
-				store.EXPECT().UpdateUsername(gomock.Any(), gomock.Eq(arg)).Times(1).Return(user.ID, nil)
+				store.EXPECT().UpdateUsername(gomock.Any(), EqUpdateUsernameParams(&arg, newPassword)).Times(1).Return(user.ID, nil)
 				store.EXPECT().DeleteSession(gomock.Any(), gomock.Any()).Times(1)
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
@@ -543,8 +585,9 @@ func TestUpdateUser(t *testing.T) {
 				require.NoError(t, err)
 
 				arg := db.UpdateUserPasswordParams{
-					Password: hashedPass,
-					ID:       user.ID,
+					Password:  hashedPass,
+					ID:        user.ID,
+					UpdatedAt: user.UpdatedAt,
 				}
 				store.EXPECT().GetSessionById(gomock.Any(), gomock.Any()).Times(1)
 				store.EXPECT().UpdateUserPassword(gomock.Any(), EqUpdateUserParams(&arg, newPassword)).Times(1).Return(user.ID, nil)
@@ -599,6 +642,8 @@ func TestUpdateUser(t *testing.T) {
 		tc := testCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -709,6 +754,8 @@ func TestDeleteUser(t *testing.T) {
 		tc := testCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 

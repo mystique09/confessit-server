@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -84,6 +85,8 @@ func (s *Server) createMessage(c echo.Context) error {
 		ID:         uuid.New(),
 		ReceiverID: user.ID,
 		Content:    data.Content,
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
 	}
 	message, err := s.store.CreateMessage(c.Request().Context(), msgArg)
 	if err != nil {
@@ -303,6 +306,7 @@ func (s *Server) updateMessage(c echo.Context) error {
 	message, err := s.store.UpdateMessageStatus(c.Request().Context(), db.UpdateMessageStatusParams{
 		ID:         messageId,
 		ReceiverID: tokenPayload.UserId,
+		UpdatedAt:  time.Now(),
 	})
 	if err != nil {
 		if err == sql.ErrNoRows {

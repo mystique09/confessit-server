@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -122,9 +123,11 @@ func (s *Server) createUser(c echo.Context) error {
 	}
 
 	createUserParam := db.CreateUserParams{
-		ID:       uuid.New(),
-		Username: data.Username,
-		Password: hashedPassword,
+		ID:        uuid.New(),
+		Username:  data.Username,
+		Password:  hashedPassword,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 
 	user, err := s.store.CreateUser(c.Request().Context(), createUserParam)
@@ -360,8 +363,9 @@ func (s *Server) updateUser(c echo.Context) error {
 	switch data.Field {
 	case "username":
 		updatedUserParam := db.UpdateUsernameParams{
-			Username: data.Payload,
-			ID:       userId,
+			Username:  data.Payload,
+			ID:        userId,
+			UpdatedAt: time.Now(),
 		}
 
 		user, err := s.store.UpdateUsername(c.Request().Context(), updatedUserParam)
@@ -385,8 +389,9 @@ func (s *Server) updateUser(c echo.Context) error {
 		}
 
 		updateUserParam := db.UpdateUserPasswordParams{
-			ID:       userId,
-			Password: hashedPassword,
+			ID:        userId,
+			Password:  hashedPassword,
+			UpdatedAt: time.Now(),
 		}
 
 		user, err := s.store.UpdateUserPassword(c.Request().Context(), updateUserParam)
