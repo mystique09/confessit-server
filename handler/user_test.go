@@ -39,6 +39,8 @@ func (e *eqCreateUserParamsMatcher) Matches(x interface{}) bool {
 
 	e.arg.ID = arg.ID
 	e.arg.Password = arg.Password
+	e.arg.CreatedAt = arg.CreatedAt
+	e.arg.UpdatedAt = arg.UpdatedAt
 
 	return reflect.DeepEqual(e.arg, arg)
 }
@@ -52,24 +54,27 @@ func EqCreateUserParams(arg *db.CreateUserParams, password string) gomock.Matche
 }
 
 func TestCreateUser(t *testing.T) {
-	password, user := randomUser(t)
+	password, user := RandomUser(t)
 
 	testCases := []testCase{
 		{
 			name:    "OK",
 			payload: fmt.Sprintf(`{"username": %q, "password": %q}`, user.Username, password),
 			buildStubs: func(store *mock.MockStore) {
-				arg := db.CreateUserParams{
-					ID:       user.ID,
-					Username: user.Username,
-					Password: user.Password,
+				arg := &db.CreateUserParams{
+					ID:        user.ID,
+					Username:  user.Username,
+					Password:  user.Password,
+					CreatedAt: user.CreatedAt,
+					UpdatedAt: user.UpdatedAt,
 				}
 
 				store.
 					EXPECT().
-					CreateUser(gomock.Any(), EqCreateUserParams(&arg, password)).
+					CreateUser(gomock.Any(), EqCreateUserParams(arg, password)).
 					Times(1).
 					Return(user.ID, nil)
+				store.EXPECT().CreateUserIdentity(gomock.Any(), gomock.Any()).Times(1)
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
 				require.Equal(t, 200, rec.Code)
@@ -124,13 +129,16 @@ func TestCreateUser(t *testing.T) {
 			name:    "Already exist",
 			payload: fmt.Sprintf(`{"username": %q, "password": %q}`, user.Username, password),
 			buildStubs: func(store *mock.MockStore) {
-				arg := db.CreateUserParams{
-					ID:       user.ID,
-					Username: user.Username,
-					Password: user.Password,
+				arg := &db.CreateUserParams{
+					ID:        user.ID,
+					Username:  user.Username,
+					Password:  user.Password,
+					CreatedAt: user.CreatedAt,
+					UpdatedAt: user.UpdatedAt,
 				}
 
-				store.EXPECT().CreateUser(gomock.Any(), EqCreateUserParams(&arg, password)).Times(1).Return(user.ID, errors.New("unique violation"))
+				store.EXPECT().CreateUser(gomock.Any(), EqCreateUserParams(arg, password)).Times(1).Return(user.ID, errors.New("unique violation"))
+				store.EXPECT().CreateUserIdentity(gomock.Any(), gomock.Any()).Times(0)
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
 				require.Equal(t, 400, rec.Code)
@@ -149,6 +157,7 @@ func TestCreateUser(t *testing.T) {
 			payload: fmt.Sprintf(`{"username": %q, "password": %q}`, user.Username, password),
 			buildStubs: func(store *mock.MockStore) {
 				store.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Times(1).Return(uuid.Nil, sql.ErrConnDone)
+				store.EXPECT().CreateUserIdentity(gomock.Any(), gomock.Any()).Times(0)
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
 				require.Equal(t, 500, rec.Code)
@@ -168,6 +177,8 @@ func TestCreateUser(t *testing.T) {
 		tc := testCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -263,6 +274,8 @@ func TestListUsers(t *testing.T) {
 		tc := testCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -287,7 +300,7 @@ func TestListUsers(t *testing.T) {
 }
 
 func TestGetUserById(t *testing.T) {
-	_, user := randomUser(t)
+	_, user := RandomUser(t)
 
 	testCases := []testCase{
 		{
@@ -361,6 +374,8 @@ func TestGetUserById(t *testing.T) {
 		tc := testCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -377,6 +392,93 @@ func TestGetUserById(t *testing.T) {
 			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, cfg.AccessTokenDuration)
 			require.NoError(t, err)
 			req.Header.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", token))
+
+			server.router.ServeHTTP(rec, req)
+			tc.checkResponse(rec)
+		})
+	}
+}
+
+func TestGetUserByUsername(t *testing.T) {
+	_, user := RandomUser(t)
+
+	testCases := []testCase{
+		{
+			name:    "OK",
+			payload: user.Username,
+			buildStubs: func(store *mock.MockStore) {
+				store.EXPECT().GetUserByUsername(gomock.Any(), gomock.Eq(user.Username)).Times(1).Return(user, nil)
+			},
+			checkResponse: func(rec *httptest.ResponseRecorder) {
+				require.Equal(t, 200, rec.Code)
+
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+
+				require.NoError(t, json.Unmarshal(body, &resp))
+				require.NotNil(t, resp.Data)
+			},
+		},
+		{
+			name:    "NOT FOUND",
+			payload: user.Username,
+			buildStubs: func(store *mock.MockStore) {
+				store.EXPECT().GetUserByUsername(gomock.Any(), gomock.Eq(user.Username)).Times(1).Return(db.User{}, sql.ErrNoRows)
+			},
+			checkResponse: func(rec *httptest.ResponseRecorder) {
+				require.Equal(t, 400, rec.Code)
+
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+
+				require.NoError(t, json.Unmarshal(body, &resp))
+
+				require.Equal(t, NOT_FOUND.Err, resp.Err)
+			},
+		},
+		{
+			name:    "INTERNAL ERROR",
+			payload: user.Username,
+			buildStubs: func(store *mock.MockStore) {
+				store.EXPECT().GetUserByUsername(gomock.Any(), gomock.Eq(user.Username)).Times(1).Return(db.User{}, sql.ErrConnDone)
+			},
+			checkResponse: func(rec *httptest.ResponseRecorder) {
+				require.Equal(t, 500, rec.Code)
+
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+
+				require.NoError(t, json.Unmarshal(body, &resp))
+				require.NotNil(t, resp.Err)
+			},
+		},
+	}
+
+	for i := range testCases {
+		tc := testCases[i]
+
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			store := mock.NewMockStore(ctrl)
+			tc.buildStubs(store)
+
+			server, err := NewServer(store, cfg)
+			require.NoError(t, err)
+
+			rec := httptest.NewRecorder()
+			url := fmt.Sprintf("/api/v1/users/one/%s", tc.payload)
+
+			req := httptest.NewRequest(http.MethodGet, url, nil)
 
 			server.router.ServeHTTP(rec, req)
 			tc.checkResponse(rec)
@@ -402,6 +504,7 @@ func (e *eqUpdateUserParamsMatcher) Matches(x interface{}) bool {
 
 	e.arg.ID = arg.ID
 	e.arg.Password = arg.Password
+	e.arg.UpdatedAt = arg.UpdatedAt
 
 	return reflect.DeepEqual(e.arg, arg)
 }
@@ -414,8 +517,34 @@ func EqUpdateUserParams(arg *db.UpdateUserPasswordParams, password string) gomoc
 	return &eqUpdateUserParamsMatcher{*arg, password}
 }
 
+type eqUpdateUsernameParamsMatcher struct {
+	arg      db.UpdateUsernameParams
+	password string
+}
+
+func (e *eqUpdateUsernameParamsMatcher) Matches(x interface{}) bool {
+	arg, ok := x.(db.UpdateUsernameParams)
+	if !ok {
+		return false
+	}
+
+	e.arg.ID = arg.ID
+	e.arg.Username = arg.Username
+	e.arg.UpdatedAt = arg.UpdatedAt
+
+	return reflect.DeepEqual(e.arg, arg)
+}
+
+func (e *eqUpdateUsernameParamsMatcher) String() string {
+	return fmt.Sprintf("matches arg %v and id %v", e.arg, e.password)
+}
+
+func EqUpdateUsernameParams(arg *db.UpdateUsernameParams, password string) gomock.Matcher {
+	return &eqUpdateUsernameParamsMatcher{*arg, password}
+}
+
 func TestUpdateUser(t *testing.T) {
-	_, user := randomUser(t)
+	_, user := RandomUser(t)
 	session_id := uuid.New()
 	newUsername := common.RandomString(12)
 	newPassword := common.RandomString(12)
@@ -426,12 +555,13 @@ func TestUpdateUser(t *testing.T) {
 			payload: fmt.Sprintf(`{"field": "username", "payload": %q, "session_id": %q}`, newUsername, session_id),
 			buildStubs: func(store *mock.MockStore) {
 				arg := db.UpdateUsernameParams{
-					ID:       user.ID,
-					Username: newUsername,
+					ID:        user.ID,
+					Username:  newUsername,
+					UpdatedAt: user.UpdatedAt,
 				}
 
 				store.EXPECT().GetSessionById(gomock.Any(), gomock.Any()).Times(1)
-				store.EXPECT().UpdateUsername(gomock.Any(), gomock.Eq(arg)).Times(1).Return(user.ID, nil)
+				store.EXPECT().UpdateUsername(gomock.Any(), EqUpdateUsernameParams(&arg, newPassword)).Times(1).Return(user.ID, nil)
 				store.EXPECT().DeleteSession(gomock.Any(), gomock.Any()).Times(1)
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
@@ -455,8 +585,9 @@ func TestUpdateUser(t *testing.T) {
 				require.NoError(t, err)
 
 				arg := db.UpdateUserPasswordParams{
-					Password: hashedPass,
-					ID:       user.ID,
+					Password:  hashedPass,
+					ID:        user.ID,
+					UpdatedAt: user.UpdatedAt,
 				}
 				store.EXPECT().GetSessionById(gomock.Any(), gomock.Any()).Times(1)
 				store.EXPECT().UpdateUserPassword(gomock.Any(), EqUpdateUserParams(&arg, newPassword)).Times(1).Return(user.ID, nil)
@@ -511,6 +642,8 @@ func TestUpdateUser(t *testing.T) {
 		tc := testCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -538,7 +671,7 @@ func TestUpdateUser(t *testing.T) {
 }
 
 func TestDeleteUser(t *testing.T) {
-	_, user := randomUser(t)
+	_, user := RandomUser(t)
 	sessionId := uuid.New()
 
 	testCases := []testCase{
@@ -621,6 +754,8 @@ func TestDeleteUser(t *testing.T) {
 		tc := testCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 

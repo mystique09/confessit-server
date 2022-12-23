@@ -32,6 +32,8 @@ func (e *eqCreateMessageParams) Matches(x interface{}) bool {
 	}
 
 	e.arg.ID = arg.ID
+	e.arg.CreatedAt = arg.CreatedAt
+	e.arg.UpdatedAt = arg.UpdatedAt
 
 	return reflect.DeepEqual(e.arg, arg)
 }
@@ -45,8 +47,8 @@ func EqCreateMessageParams(arg *db.CreateMessageParams, id uuid.UUID) gomock.Mat
 }
 
 func TestServer_createMessage(t *testing.T) {
-	_, user := randomUser(t)
-	msg := randomMessage(t, user.ID)
+	_, user := RandomUser(t)
+	msg := RandomMessage(t, user.ID)
 
 	testCases := []testCase{
 		{
@@ -57,6 +59,8 @@ func TestServer_createMessage(t *testing.T) {
 					ID:         msg.ID,
 					ReceiverID: user.ID,
 					Content:    msg.Content,
+					CreatedAt:  msg.CreatedAt,
+					UpdatedAt:  msg.UpdatedAt,
 				}
 				store.EXPECT().GetUserById(gomock.Any(), gomock.Eq(user.ID)).Times(1).Return(user, nil)
 				store.EXPECT().CreateMessage(gomock.Any(), EqCreateMessageParams(&arg, arg.ID)).Times(1).Return(msg, nil)
@@ -127,6 +131,8 @@ func TestServer_createMessage(t *testing.T) {
 		tc := testCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -148,7 +154,7 @@ func TestServer_createMessage(t *testing.T) {
 }
 
 func TestListMessages(t *testing.T) {
-	_, user := randomUser(t)
+	_, user := RandomUser(t)
 	messages := make([]db.Message, 20)
 	testCases := []testCase{
 		{
@@ -256,6 +262,8 @@ func TestListMessages(t *testing.T) {
 		tc := testCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -279,7 +287,7 @@ func TestListMessages(t *testing.T) {
 }
 
 func TestListMessagesUnauthorized(t *testing.T) {
-	_, user := randomUser(t)
+	_, user := RandomUser(t)
 
 	testCases := []testCase{
 		{
@@ -322,6 +330,8 @@ func TestListMessagesUnauthorized(t *testing.T) {
 		tc := testCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -346,8 +356,8 @@ func TestListMessagesUnauthorized(t *testing.T) {
 }
 
 func TestGetMessageById(t *testing.T) {
-	_, user := randomUser(t)
-	msg := randomMessage(t, user.ID)
+	_, user := RandomUser(t)
+	msg := RandomMessage(t, user.ID)
 
 	testCases := []testCase{
 		{
@@ -355,7 +365,6 @@ func TestGetMessageById(t *testing.T) {
 			payload: fmt.Sprintf("/api/v1/messages/%s", msg.ID),
 			buildStubs: func(store *mock.MockStore) {
 				store.EXPECT().GetMessageById(gomock.Any(), gomock.Eq(msg.ID)).Times(1).Return(msg, nil)
-				store.EXPECT().UpdateMessageStatus(gomock.Any(), gomock.Any()).Times(1)
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
 				require.Equal(t, 200, rec.Code)
@@ -425,6 +434,8 @@ func TestGetMessageById(t *testing.T) {
 		tc := testCases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -447,9 +458,130 @@ func TestGetMessageById(t *testing.T) {
 	}
 }
 
+type eqUpdateMessageParams struct {
+	arg db.UpdateMessageStatusParams
+}
+
+func (e eqUpdateMessageParams) Matches(x interface{}) bool {
+	arg, ok := x.(db.UpdateMessageStatusParams)
+	if !ok {
+		return false
+	}
+
+	e.arg.UpdatedAt = arg.UpdatedAt
+
+	return arg.ID == e.arg.ID && arg.ReceiverID == e.arg.ReceiverID && arg.UpdatedAt == e.arg.UpdatedAt
+}
+
+func (e eqUpdateMessageParams) String() string {
+	return fmt.Sprintf("is equal to %v", e.arg)
+}
+
+func EqUpdateMessageParams(arg *db.UpdateMessageStatusParams, id uuid.UUID) gomock.Matcher {
+	return &eqUpdateMessageParams{*arg}
+}
+
+func TestUpdateMessage(t *testing.T) {
+	// create a unit test for the /api/v1/messages/:id endpoint
+	_, user := RandomUser(t)
+	message := RandomMessage(t, user.ID)
+
+	testCases := []testCase{
+		{
+			name:    "OK",
+			payload: fmt.Sprintf("/api/v1/messages/%s", message.ID),
+			buildStubs: func(store *mock.MockStore) {
+				arg := db.UpdateMessageStatusParams{
+					ID:         message.ID,
+					ReceiverID: message.ReceiverID,
+					UpdatedAt:  message.UpdatedAt,
+				}
+				store.EXPECT().GetMessageById(gomock.Any(), gomock.Eq(message.ID)).Times(1).Return(message, nil)
+				store.EXPECT().UpdateMessageStatus(gomock.Any(), EqUpdateMessageParams(&arg, arg.ID)).Times(1).Return(message.ID, nil)
+			},
+			checkResponse: func(rec *httptest.ResponseRecorder) {
+				require.Equal(t, 200, rec.Code)
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+				require.NoError(t, json.Unmarshal(body, &resp))
+				require.Empty(t, resp.Err)
+				require.NotNil(t, resp.Data)
+			},
+		},
+		{
+			name:    "NOT FOUND",
+			payload: fmt.Sprintf("/api/v1/messages/%s", message.ID),
+			buildStubs: func(store *mock.MockStore) {
+				store.EXPECT().GetMessageById(gomock.Any(), gomock.Eq(message.ID)).Times(1).Return(db.Message{}, sql.ErrNoRows)
+			},
+			checkResponse: func(rec *httptest.ResponseRecorder) {
+				require.Equal(t, 404, rec.Code)
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+				require.NoError(t, json.Unmarshal(body, &resp))
+				require.NotNil(t, resp.Err)
+				require.Empty(t, resp.Data)
+			},
+		},
+		{
+			name:    "INTERNAL ERROR",
+			payload: fmt.Sprintf("/api/v1/messages/%s", message.ID),
+			buildStubs: func(store *mock.MockStore) {
+				arg := db.UpdateMessageStatusParams{
+					ID:         message.ID,
+					ReceiverID: message.ReceiverID,
+					UpdatedAt:  message.UpdatedAt,
+				}
+				store.EXPECT().GetMessageById(gomock.Any(), gomock.Eq(message.ID)).Times(1).Return(db.Message{}, sql.ErrConnDone)
+				store.EXPECT().UpdateMessageStatus(gomock.Any(), gomock.Eq(arg)).Times(0)
+			},
+			checkResponse: func(rec *httptest.ResponseRecorder) {
+				require.Equal(t, 500, rec.Code)
+				resp := new(response)
+
+				body, err := io.ReadAll(rec.Body)
+				require.NoError(t, err)
+				require.NoError(t, json.Unmarshal(body, &resp))
+				require.NotNil(t, resp.Err)
+				require.Empty(t, resp.Data)
+			},
+		},
+	}
+
+	for i := range testCases {
+		tc := testCases[i]
+
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			store := mock.NewMockStore(ctrl)
+			tc.buildStubs(store)
+
+			server, err := NewServer(store, cfg)
+			require.NoError(t, err)
+
+			req := httptest.NewRequest(http.MethodPut, tc.payload, nil)
+			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, cfg.AccessTokenDuration)
+			require.NoError(t, err)
+			req.Header.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", token))
+
+			rec := httptest.NewRecorder()
+
+			server.router.ServeHTTP(rec, req)
+			tc.checkResponse(rec)
+		})
+	}
+
+}
+
 func TestDeleteMessage(t *testing.T) {
-	_, user := randomUser(t)
-	msg := randomMessage(t, user.ID)
+	_, user := RandomUser(t)
+	msg := RandomMessage(t, user.ID)
 
 	testCases := []testCase{
 		{
@@ -512,7 +644,7 @@ func TestDeleteMessage(t *testing.T) {
 			name:    "UNAUTHORIZED ACCESS",
 			payload: fmt.Sprintf("/api/v1/messages/%s", msg.ID),
 			buildStubs: func(store *mock.MockStore) {
-				store.EXPECT().GetMessageById(gomock.Any(), gomock.Eq(msg.ID)).Times(1).Return(randomMessage(t, uuid.New()), nil)
+				store.EXPECT().GetMessageById(gomock.Any(), gomock.Eq(msg.ID)).Times(1).Return(RandomMessage(t, uuid.New()), nil)
 			},
 			checkResponse: func(rec *httptest.ResponseRecorder) {
 				require.Equal(t, 401, rec.Code)

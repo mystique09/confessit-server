@@ -107,6 +107,7 @@ func (s *Server) setupRouter() {
 	auth.POST("", s.loginUser)
 	auth.POST("/refresh", s.refreshAccessToken)
 	auth.POST("/validate", s.validateAccessToken)
+	auth.DELETE("/clear", s.logoutUser)
 
 	users := e.Group("/api/v1/users")
 	users.GET("", s.listUsers, s.authMiddleware)
@@ -115,11 +116,27 @@ func (s *Server) setupRouter() {
 	users.GET("/:id/messages", s.listMessages, s.authMiddleware)
 	users.PATCH("/:id", s.updateUser, s.authMiddleware)
 	users.DELETE("/:id", s.deleteUser, s.authMiddleware)
+	users.GET("/one/:username", s.getUserByUsername)
 
 	messages := e.Group("/api/v1/messages")
 	messages.GET("/:id", s.getMessageById, s.authMiddleware)
 	messages.POST("", s.createMessage)
+	messages.PUT("/:id", s.updateMessage, s.authMiddleware)
 	messages.DELETE("/:id", s.deleteMessage, s.authMiddleware)
+
+	posts := e.Group("/api/v1/posts")
+	posts.GET("", s.listAllPosts)
+	posts.GET("/:id", s.getPostById)
+	posts.POST("", s.createNewPost, s.authMiddleware)
+	posts.PATCH("/:id", s.updatePost, s.authMiddleware)
+	posts.DELETE("/:id", s.deletePost, s.authMiddleware)
+	posts.GET("/:id/comments", s.listAllComments)
+
+	comments := e.Group("/api/v1/comments")
+	comments.GET("/:id", s.getCommentById)
+	comments.POST("", s.createComment, s.authMiddleware)
+	comments.PUT("/:id", s.updateComment, s.authMiddleware)
+	comments.DELETE("/:id", s.deleteComment, s.authMiddleware)
 
 	s.router = e
 }

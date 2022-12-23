@@ -1,11 +1,11 @@
 -- name: GetSessionById :one
 SELECT *
-FROM "session"
+FROM "sessions"
 WHERE id = $1
 LIMIT 1;
 
 -- name: CreateSession :one
-INSERT INTO "session"(
+INSERT INTO "sessions"(
     id,
     user_id,
     username,
@@ -19,17 +19,17 @@ INSERT INTO "session"(
 ) RETURNING *;
 
 -- name: BlockSession :one
-UPDATE "session"
+UPDATE "sessions"
 SET is_blocked = true
 WHERE id = $1
 RETURNING id;
 
 -- name: DeleteSession :one
-DELETE FROM "session"
+DELETE FROM "sessions"
 WHERE id = $1
 RETURNING id;
 
 -- name: DeleteSessionByUserId :one
-DELETE FROM "session"
+DELETE FROM "sessions"
 WHERE user_id = $1
 RETURNING id;

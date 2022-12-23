@@ -64,6 +64,54 @@
         }
       }
     },
+    "/auth/clear": {
+      "delete": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "operationId": "logoutUser",
+        "parameters": [
+          {
+            "description": "payload needed for logout",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/logoutRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logout successful",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      }
+    },
     "/auth/refresh": {
       "post": {
         "consumes": [
@@ -181,6 +229,184 @@
         }
       }
     },
+    "/comments": {
+      "post": {
+        "security": [
+          {
+            "key": []
+          }
+        ],
+        "description": "Create a comment",
+        "tags": [
+          "comments"
+        ],
+        "summary": "Create a comment",
+        "operationId": "createComment",
+        "parameters": [
+          {
+            "description": "comment",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/createCommentRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/comments/{id}": {
+      "get": {
+        "description": "Get comment by id",
+        "tags": [
+          "comments"
+        ],
+        "summary": "Get comment by id",
+        "operationId": "getCommentById",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "comment id",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "key": []
+          }
+        ],
+        "description": "Update a comment",
+        "tags": [
+          "comments"
+        ],
+        "summary": "Update a comment",
+        "operationId": "updateComment",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "comment id",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "comment",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/updateCommentRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "key": []
+          }
+        ],
+        "description": "Delete a comment",
+        "tags": [
+          "comments"
+        ],
+        "summary": "Delete a comment",
+        "operationId": "deleteComment",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "comment id",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      }
+    },
     "/messages": {
       "post": {
         "consumes": [
@@ -275,6 +501,390 @@
             "description": "Internal error.",
             "schema": {
               "type": "object",
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "key": []
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "messages"
+        ],
+        "operationId": "updateMessage",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "uuid",
+            "description": "the message id",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response with user information.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "500": {
+            "description": "Internal error.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "key": []
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "messages"
+        ],
+        "operationId": "deleteMessage",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "uuid",
+            "description": "the message id",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response with user information.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "500": {
+            "description": "Internal error.",
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/posts": {
+      "get": {
+        "description": "List all posts",
+        "tags": [
+          "posts"
+        ],
+        "summary": "List all posts",
+        "operationId": "listAllPosts",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int32",
+            "description": "page number",
+            "name": "page",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SuccessResponse"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "key": []
+          }
+        ],
+        "description": "Create a new post",
+        "tags": [
+          "posts"
+        ],
+        "summary": "Create a new post",
+        "operationId": "createNewPost",
+        "parameters": [
+          {
+            "description": "post",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/createPostRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/posts/{id}": {
+      "get": {
+        "description": "Get a post by id",
+        "tags": [
+          "posts"
+        ],
+        "summary": "Get a post by id",
+        "operationId": "getPostById",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "post id",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/UnauthorizedResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/NotFoundResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "key": []
+          }
+        ],
+        "description": "Delete a post",
+        "tags": [
+          "posts"
+        ],
+        "summary": "Delete a post",
+        "operationId": "deletePost",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "post id",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/UnauthorizedResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      },
+      "patch": {
+        "security": [
+          {
+            "key": []
+          }
+        ],
+        "description": "Update a post",
+        "tags": [
+          "posts"
+        ],
+        "summary": "Update a post",
+        "operationId": "updatePost",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "post id",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "post",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/updatePostRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/UnauthorizedResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/InternalErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/posts/{id}/comments": {
+      "get": {
+        "description": "List all comments of a post",
+        "tags": [
+          "comments"
+        ],
+        "summary": "List all comments of a post",
+        "operationId": "listAllComments",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "post id",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SuccessResponse"
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/BadRequestResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
               "$ref": "#/definitions/InternalErrorResponse"
             }
           }
@@ -662,21 +1272,6 @@
       },
       "x-go-package": "cnfs/handler"
     },
-    "NullTime": {
-      "description": "NullTime implements the Scanner interface so\nit can be used as a scan destination, similar to NullString.",
-      "type": "object",
-      "title": "NullTime represents a time.Time that may be null.",
-      "properties": {
-        "Time": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "Valid": {
-          "type": "boolean"
-        }
-      },
-      "x-go-package": "database/sql"
-    },
     "SuccessResponse": {
       "type": "object",
       "properties": {
@@ -704,7 +1299,9 @@
       "type": "object",
       "properties": {
         "created_at": {
-          "$ref": "#/definitions/NullTime"
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "CreatedAt"
         },
         "id": {
           "type": "string",
@@ -712,7 +1309,9 @@
           "x-go-name": "ID"
         },
         "updated_at": {
-          "$ref": "#/definitions/NullTime"
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "UpdatedAt"
         },
         "username": {
           "type": "string",
@@ -725,6 +1324,27 @@
       "type": "string",
       "format": "uuid",
       "x-go-package": "github.com/google/uuid"
+    },
+    "UserIdentity": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "ID"
+        },
+        "identity_hash": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "IdentityHash"
+        },
+        "user_id": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "UserID"
+        }
+      },
+      "x-go-package": "cnfs/db/sqlc"
     },
     "accessTokenRequest": {
       "type": "object",
@@ -757,6 +1377,31 @@
       },
       "x-go-package": "cnfs/handler"
     },
+    "createCommentRequest": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string",
+          "x-go-name": "Content"
+        },
+        "parent_id": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "ParentId"
+        },
+        "post_id": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "PostId"
+        },
+        "user_identity_id": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "UserIdentityId"
+        }
+      },
+      "x-go-package": "cnfs/handler"
+    },
     "createMessageRequest": {
       "type": "object",
       "required": [
@@ -774,6 +1419,21 @@
           "type": "string",
           "format": "uuid",
           "x-go-name": "ReceiverId"
+        }
+      },
+      "x-go-package": "cnfs/handler"
+    },
+    "createPostRequest": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string",
+          "x-go-name": "Content"
+        },
+        "user_identity_id": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "UserIdentityId"
         }
       },
       "x-go-package": "cnfs/handler"
@@ -865,6 +1525,20 @@
         },
         "user": {
           "$ref": "#/definitions/User"
+        },
+        "user_identity": {
+          "$ref": "#/definitions/UserIdentity"
+        }
+      },
+      "x-go-package": "cnfs/handler"
+    },
+    "logoutRequest": {
+      "type": "object",
+      "properties": {
+        "session_id": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "SessionId"
         }
       },
       "x-go-package": "cnfs/handler"
@@ -879,6 +1553,26 @@
           "description": "The refresh token",
           "type": "string",
           "x-go-name": "RefreshToken"
+        }
+      },
+      "x-go-package": "cnfs/handler"
+    },
+    "updateCommentRequest": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string",
+          "x-go-name": "Content"
+        }
+      },
+      "x-go-package": "cnfs/handler"
+    },
+    "updatePostRequest": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string",
+          "x-go-name": "Content"
         }
       },
       "x-go-package": "cnfs/handler"
