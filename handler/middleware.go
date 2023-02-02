@@ -33,6 +33,7 @@ func (s *Server) loggerMiddleware(logger *zerolog.Logger) echo.MiddlewareFunc {
 				Time("time", v.StartTime.UTC()).
 				Str("URI", v.URI).
 				Int("status", status_code).
+				Str("method", v.Method).
 				Str("latency", v.Latency.String()).
 				Msg("request")
 
