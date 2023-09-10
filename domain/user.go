@@ -141,13 +141,14 @@ func (payload CreateUserDTO) ToUser() IUser {
   return NewUser(NewUsername(payload.Username), NewPassword(payload.Password))
 }
 
-type UserRepository interface {
-  Create(user User) error
-  FindByID(id UserID) (User, error)
-  FindByUsername(username Username) (User, error)
+type IUserRepository interface {
+  Create(user IUser) (IUser, error)
+  List(page, limit int32) ([]IUser, error)
+  FindByID(id IUserID) (IUser, error)
+  FindByUsername(username IUsername) (IUser, error)
 }
 
-type SignupUserUseCase interface {
+type ISignupUserUseCase interface {
   CheckUsernameAvailability(username Username) error
   Signup(payload CreateUserDTO) (UserResponse, error)
 }
