@@ -73,6 +73,7 @@ type (
 		Username() IUsername
 		Password() IPassword
 		IDateFields
+		IntoResponse() UserResponse
 	}
 
 	User struct {
@@ -114,17 +115,19 @@ func (u User) UpdatedAt() time.Time {
 	return u.updated_at
 }
 
-type UserResponse struct {
+type UserData struct {
 	ID        string    `json:"id"`
 	Username  string    `json:"username"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func (u User) IntoResponse() Response[UserResponse] {
-	return Response[UserResponse]{
+type UserResponse = Response[UserData]
+
+func (u User) IntoResponse() UserResponse {
+	return Response[UserData]{
 		Message: "",
-		Data: UserResponse{
+		Data: UserData{
 			ID:        u.ID().String(),
 			Username:  u.Username().String(),
 			CreatedAt: u.CreatedAt(),
@@ -150,6 +153,6 @@ type IUserRepository interface {
 }
 
 type ISignupUserUseCase interface {
-	CheckUsernameAvailability(username Username) error
-	Signup(payload CreateUserDTO) (UserResponse, error)
+	CheckUsernameAvailability(username IUsername) bool
+	Signup(payload CreateUserDTO) UserResponse
 }
