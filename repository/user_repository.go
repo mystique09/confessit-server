@@ -1,16 +1,15 @@
 package repository
 
 import (
-	db "cnfs/db/sqlc"
 	"cnfs/domain"
 )
 
 type userRepository struct {
-  db db.Store
+  data_store domain.IDataStorage
 }
 
-func NewUserRepository(db db.Store) domain.IUserRepository {
-  return &userRepository{db: db}
+func NewUserRepository(data_store domain.IDataStorage) domain.IUserRepository {
+  return &userRepository{data_store}
 }
 
 func (r userRepository) Create(user domain.IUser) (domain.IUser, error) {
