@@ -7,12 +7,19 @@ import (
 )
 
 type (
-  IUsername interface {
+  IBaseField interface {
     ValidateLength(n int) bool
     String() string
   }
 
+  IUsername = IBaseField
+  IPassword = IBaseField
+
   Username struct {
+    value string
+  }
+
+  Password struct {
     value string
   }
 )
@@ -28,17 +35,6 @@ func (u Username) ValidateLength(n int) bool {
 func (u Username) String() string {
   return u.value
 }
-
-type (
-  IPassword interface {
-    ValidateLength(n int) bool
-    String() string
-  }
-
-  Password struct {
-    value string
-  }
-)
 
 func NewPassword(value string) IPassword {
   return Password{value: value}
