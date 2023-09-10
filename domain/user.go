@@ -69,9 +69,9 @@ func (p Password) String() string {
 
 type (
 	IUser interface {
-		ID() string
-		Username() string
-		Password() string
+		ID() IUserID
+		Username() IUsername
+		Password() IPassword
 		IDateFields
 	}
 
@@ -94,16 +94,16 @@ func NewUser(username IUsername, password IPassword) IUser {
 	}
 }
 
-func (u User) ID() string {
-	return u.id.String()
+func (u User) ID() IUserID {
+	return u.id
 }
 
-func (u User) Username() string {
-	return u.username.String()
+func (u User) Username() IUsername {
+	return u.username
 }
 
-func (u User) Password() string {
-	return u.password.String()
+func (u User) Password() IPassword {
+	return u.password
 }
 
 func (u User) CreatedAt() time.Time {
@@ -125,8 +125,8 @@ func (u User) IntoResponse() Response[UserResponse] {
 	return Response[UserResponse]{
 		Message: "",
 		Data: UserResponse{
-			ID:        u.ID(),
-			Username:  u.Username(),
+			ID:        u.ID().String(),
+			Username:  u.Username().String(),
 			CreatedAt: u.CreatedAt(),
 			UpdatedAt: u.UpdatedAt(),
 		},

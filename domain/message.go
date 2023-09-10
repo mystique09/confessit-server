@@ -84,20 +84,20 @@ func (m Message) UpdatedAt() time.Time {
 }
 
 type MessageResponse struct {
-	ID         IMessageID `json:"id"`
-	ReceiverID IUserID    `json:"receiver_id"`
-	Content    string     `json:"content"`
-	Seen       bool       `json:"seen"`
-	CreatedAt  time.Time  `json:"created_at"`
-	UpdatedAt  time.Time  `json:"updated_at"`
+	ID         string    `json:"id"`
+	ReceiverID string    `json:"receiver_id"`
+	Content    string    `json:"content"`
+	Seen       bool      `json:"seen"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
 }
 
 func (m Message) IntoResponse() Response[MessageResponse] {
 	return Response[MessageResponse]{
 		Message: "",
 		Data: MessageResponse{
-			ID:         m.ID(),
-			ReceiverID: m.ReceiverID(),
+			ID:         m.ID().String(),
+			ReceiverID: m.ReceiverID().String(),
 			Content:    m.Content(),
 			Seen:       m.Seen(),
 			CreatedAt:  m.CreatedAt(),
