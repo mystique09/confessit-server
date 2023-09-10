@@ -7,144 +7,149 @@ import (
 )
 
 type (
-  IBaseField interface {
-    ValidateLength(n int) bool
-    String() string
-  }
+	IUserID interface {
+		IBaseField
+		From(id uuid.UUID) IUserID
+	}
+	IUsername = IBaseField
+	IPassword = IBaseField
 
-  IUsername = IBaseField
-  IPassword = IBaseField
+	UserID struct {
+		value uuid.UUID
+	}
 
-  Username struct {
-    value string
-  }
+	Username struct {
+		value string
+	}
 
-  Password struct {
-    value string
-  }
-)
-
-func NewUsername(value string) IUsername {
-  return Username{value: value}
-}
-
-func (u Username) ValidateLength(n int) bool {
-  return len(u.value) >= n
-}
-
-func (u Username) String() string {
-  return u.value
-}
-
-func NewPassword(value string) IPassword {
-  return Password{value: value}
-}
-
-func (p Password) ValidateLength(n int) bool {
-  return len(p.value) >= n
-}
-
-func (p Password) String() string {
-  return p.value
-}
-
-type (
-  IUserID interface {
-    String() string
-  }
-
-  UserID struct {
-    value uuid.UUID
-  }
+	Password struct {
+		value string
+	}
 )
 
 func NewUserID() IUserID {
-  return UserID{value: uuid.New()}
+	return UserID{value: uuid.New()}
 }
 
 func (id UserID) String() string {
-  return id.value.String()
+	return id.value.String()
+}
+
+func (UserID) From(id uuid.UUID) IUserID {
+	return UserID{value: id}
+}
+
+func (id UserID) ValidateLength(n int) bool {
+	return len(id.String()) == n
+}
+
+func NewUsername(value string) IUsername {
+	return Username{value: value}
+}
+
+func (u Username) ValidateLength(n int) bool {
+	return len(u.value) >= n
+}
+
+func (u Username) String() string {
+	return u.value
+}
+
+func NewPassword(value string) IPassword {
+	return Password{value: value}
+}
+
+func (p Password) ValidateLength(n int) bool {
+	return len(p.value) >= n
+}
+
+func (p Password) String() string {
+	return p.value
 }
 
 type (
-  IUser interface {
-    ID() string
-    Username() string
-    Password() string
-    CreatedAt() time.Time
-    UpdatedAt() time.Time
-  }
+	IUser interface {
+		ID() string
+		Username() string
+		Password() string
+		IDateFields
+	}
 
-  User struct {
-    id IUserID
-    username IUsername
-    password IPassword
-    created_at time.Time
-    updated_at time.Time
-  }
+	User struct {
+		id         IUserID
+		username   IUsername
+		password   IPassword
+		created_at time.Time
+		updated_at time.Time
+	}
 )
 
 func NewUser(username IUsername, password IPassword) IUser {
-  return User{
-    id: NewUserID(),
-    username: username,
-    password: password,
-  }
+	return User{
+		id:         NewUserID(),
+		username:   username,
+		password:   password,
+		created_at: time.Now(),
+		updated_at: time.Now(),
+	}
 }
 
 func (u User) ID() string {
-  return u.id.String()
+	return u.id.String()
 }
 
 func (u User) Username() string {
-  return u.username.String()
+	return u.username.String()
 }
 
 func (u User) Password() string {
-  return u.password.String()
+	return u.password.String()
 }
 
 func (u User) CreatedAt() time.Time {
-  return u.created_at
+	return u.created_at
 }
 
 func (u User) UpdatedAt() time.Time {
-  return u.updated_at
+	return u.updated_at
 }
 
 type UserResponse struct {
-  ID string `json:"id"`
-  Username string `json:"username"`
-  CreatedAt time.Time `json:"created_at"`
-  UpdatedAt time.Time `json:"updated_at"`
+	ID        string    `json:"id"`
+	Username  string    `json:"username"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func (u User) IntoResponse() UserResponse {
-  return UserResponse{
-    ID: u.ID(),
-    Username: u.Username(),
-    CreatedAt: u.CreatedAt(),
-    UpdatedAt: u.UpdatedAt(),
-  }
+func (u User) IntoResponse() Response[UserResponse] {
+	return Response[UserResponse]{
+		Message: "",
+		Data: UserResponse{
+			ID:        u.ID(),
+			Username:  u.Username(),
+			CreatedAt: u.CreatedAt(),
+			UpdatedAt: u.UpdatedAt(),
+		},
+	}
 }
 
 type CreateUserDTO struct {
-  Username string `json:"username" validate:"required,min=1,max=20"`
-  Password string `json:"password" validate:"required,min=8,max=20"`
+	Username string `json:"username" validate:"required,min=1,max=20"`
+	Password string `json:"password" validate:"required,min=8,max=20"`
 }
 
 func (payload CreateUserDTO) ToUser() IUser {
-  return NewUser(NewUsername(payload.Username), NewPassword(payload.Password))
+	return NewUser(NewUsername(payload.Username), NewPassword(payload.Password))
 }
 
 type IUserRepository interface {
-  Create(user IUser) (IUser, error)
-  List(page, limit int32) ([]IUser, error)
-  FindByID(id IUserID) (IUser, error)
-  FindByUsername(username IUsername) (IUser, error)
+	Create(user IUser) (IUser, error)
+	List(page, limit int32) ([]IUser, error)
+	FindByID(id IUserID) (IUser, error)
+	FindByUsername(username IUsername) (IUser, error)
 }
 
 type ISignupUserUseCase interface {
-  CheckUsernameAvailability(username Username) error
-  Signup(payload CreateUserDTO) (UserResponse, error)
+	CheckUsernameAvailability(username Username) error
+	Signup(payload CreateUserDTO) (UserResponse, error)
 }
