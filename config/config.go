@@ -7,14 +7,25 @@ import (
 	"github.com/spf13/viper"
 )
 
-type configLoader struct {}
+type configLoader struct {
+  reader *viper.Viper
+}
 
-func NewConfigLoader() domain.IConfigLoader {
-  return configLoader{}
+func NewConfigLoader(path, name string) domain.IConfigLoader {
+  reader := viper.New()
+  reader.AddConfigPath(path)
+  reader.SetConfigName(name)
+  reader.AutomaticEnv()
+
+  return configLoader{reader}
 }
 
 func (loader configLoader) Unmarshal(cfg interface{}) error {
-  return viper.Unmarshal(&cfg)
+  if err := loader.reader.ReadInConfig(); err != nil {
+    return err
+  }
+
+  return loader.reader.Unmarshal(&cfg)
 }
 
 type config struct {
