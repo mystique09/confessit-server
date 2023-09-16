@@ -6,10 +6,10 @@ type DatabaseInstance = sql.DB
 type CacheInstance = interface{}
 type FileStorageInstance = interface{}
 
-type IDataStorage interface {
-	GetCacheInstance() IStorage[DatabaseInstance]
-	GetDatabaseInstance() IStorage[CacheInstance]
-	GetFileStorageInstance() IStorage[FileStorageInstance]
+type IDataStorage[C, D, F any] interface {
+	GetCacheInstance() IStorage[C]
+	GetDatabaseInstance() IStorage[D]
+	GetFileStorageInstance() IStorage[F]
 }
 
 type IStorage[T any] interface {

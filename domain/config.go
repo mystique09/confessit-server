@@ -2,6 +2,10 @@ package domain
 
 import "time"
 
+type IConfigLoader interface {
+  Unmarshal(interface{}) error
+}
+
 type IConfig interface {
 	ServerConfig() IServerConfig
 	TokenConfig() ITokenConfig
@@ -9,7 +13,7 @@ type IConfig interface {
 
 type ITokenConfig interface {
 	AuthSecretKey() string
-	AccessTokenSecrerKey() string
+	AccessTokenSecretKey() string
 	AccessTokenDuration() time.Duration
 	RefreshTokenSecretKey() string
 	RefreshTokenDuration() time.Duration
