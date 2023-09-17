@@ -1,24 +1,25 @@
 package config
 
 import (
+	"cnfs/config"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateNewConfig(t *testing.T) {
-  cfgLoader := NewConfigLoader("../", "app")
-  serverCfg, err := NewServerConfig(cfgLoader)
+  cfgLoader := config.NewConfigLoader("../", "app")
+  serverCfg, err := config.NewServerConfig(cfgLoader)
   if err != nil {
     t.Error("error creating server config")
   }
 
-  tokenConfig, err := NewTokenConfig(cfgLoader)
+  tokenConfig, err := config.NewTokenConfig(cfgLoader)
   if err != nil {
     t.Error("error creating token config")
   }
 
-  cfg := NewConfig(serverCfg, tokenConfig)
+  cfg := config.NewConfig(serverCfg, tokenConfig)
   assert.NotNil(t, cfg)
   assert.Empty(t, cfg.ServerConfig().Host())
 }
