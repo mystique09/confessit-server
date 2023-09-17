@@ -4,11 +4,13 @@ import (
 	"cnfs/domain"
 )
 
+type UserDataStoreInstance = domain.IDataStorage[domain.CacheInstance, domain.DatabaseInstance, domain.FileStorageInstance]
+
 type userRepository struct {
-  data_store domain.IDataStorage
+  data_store UserDataStoreInstance
 }
 
-func NewUserRepository(data_store domain.IDataStorage) domain.IUserRepository {
+func NewUserRepository(data_store UserDataStoreInstance) domain.IUserRepository {
   return &userRepository{data_store}
 }
 
