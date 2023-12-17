@@ -82,7 +82,7 @@ func TestListAllPublicPost(t *testing.T) {
 			store := mock.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server, err := NewServer(store, cfg)
+			server, err := NewServer(store, *cfg)
 			require.NoError(t, err)
 
 			rec := httptest.NewRecorder()
@@ -199,13 +199,13 @@ func TestCreateNewPost(t *testing.T) {
 			store := mock.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server, err := NewServer(store, cfg)
+			server, err := NewServer(store, *cfg)
 			require.NoError(t, err)
 
 			rec := httptest.NewRecorder()
 			req := httptest.NewRequest("POST", "/api/v1/posts", strings.NewReader(tc.payload))
 			req.Header.Set("Content-Type", "application/json")
-			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, cfg.AccessTokenDuration)
+			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.tokenCfg.AccessTokenDuration())
 			require.NoError(t, err)
 			req.Header.Set("Authorization", "Bearer "+token)
 
@@ -263,7 +263,7 @@ func TestGetPostById(t *testing.T) {
 			store := mock.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server, err := NewServer(store, cfg)
+			server, err := NewServer(store, *cfg)
 			require.NoError(t, err)
 
 			rec := httptest.NewRecorder()
@@ -356,13 +356,13 @@ func TestUpdateOnePost(t *testing.T) {
 			store := mock.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server, err := NewServer(store, cfg)
+			server, err := NewServer(store, *cfg)
 			require.NoError(t, err)
 
 			rec := httptest.NewRecorder()
 			req := httptest.NewRequest("PATCH", "/api/v1/posts/"+post.ID.String(), strings.NewReader(tc.payload))
 			req.Header.Set("Content-Type", "application/json")
-			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, cfg.AccessTokenDuration)
+			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.tokenCfg.AccessTokenDuration())
 			require.NoError(t, err)
 			req.Header.Set("Authorization", "Bearer "+token)
 
@@ -442,13 +442,13 @@ func TestDeletePost(t *testing.T) {
 			store := mock.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server, err := NewServer(store, cfg)
+			server, err := NewServer(store, *cfg)
 			require.NoError(t, err)
 
 			rec := httptest.NewRecorder()
 			req := httptest.NewRequest("DELETE", tc.payload, nil)
 			req.Header.Set("Content-Type", "application/json")
-			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, cfg.AccessTokenDuration)
+			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.tokenCfg.AccessTokenDuration())
 			require.NoError(t, err)
 			req.Header.Set("Authorization", "Bearer "+token)
 

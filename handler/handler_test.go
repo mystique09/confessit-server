@@ -5,6 +5,7 @@ import (
 	"cnfs/config"
 	"cnfs/db/mock"
 	db "cnfs/db/sqlc"
+	"cnfs/domain"
 	"log"
 	"net/http/httptest"
 	"os"
@@ -22,10 +23,21 @@ type testCase struct {
 	checkResponse func(rec *httptest.ResponseRecorder)
 }
 
-var cfg *config.Config
+var cfg *domain.IConfig
 
 func TestMain(m *testing.M) {
-	c, err := config.LoadConfig("..", "app")
+	configLoader := config.NewConfigLoader("..", "app")
+	serverConfig, err := config.NewServerConfig(configLoader)
+	if err != nil {
+		log.Fatal(err)
+	}
+	tokenConfig, err := config.NewTokenConfig(configLoader)
+	if err != nil {
+		log.Fatal(err)
+
+	}
+	c := config.NewConfig(serverConfig, tokenConfig)
+
 	if err != nil {
 		log.Fatal(err.Error())
 	}

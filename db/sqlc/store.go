@@ -1,7 +1,7 @@
 package db
 
 import (
-	"cnfs/config"
+	"cnfs/domain"
 	"database/sql"
 )
 
@@ -11,11 +11,11 @@ type Store interface {
 
 type PostgresqlStore struct {
 	db  *sql.DB
-	cfg *config.Config
+	cfg domain.IConfig
 	*Queries
 }
 
-func NewStore(db *sql.DB, cfg *config.Config) Store {
+func NewStore(db *sql.DB, cfg domain.IConfig) Store {
 	return &PostgresqlStore{
 		db:      db,
 		cfg:     cfg,

@@ -45,7 +45,7 @@ func (s *Server) loggerMiddleware(logger *zerolog.Logger) echo.MiddlewareFunc {
 func (s *Server) corsMiddleware() echo.MiddlewareFunc {
 	return middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{
-			s.cfg.ClientUrl,
+			s.cfg.ClientUrl(),
 		},
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders: []string{

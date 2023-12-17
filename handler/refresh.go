@@ -120,7 +120,7 @@ func (s *Server) refreshAccessToken(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, newError("expired session"))
 	}
 
-	newAccessToken, newAccessTokenPayload, err := s.tokenMaker.CreateToken(session.UserID, session.Username, s.cfg.AccessTokenDuration)
+	newAccessToken, newAccessTokenPayload, err := s.tokenMaker.CreateToken(session.UserID, session.Username, s.tokenCfg.AccessTokenDuration())
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, newError(err.Error()))
 	}

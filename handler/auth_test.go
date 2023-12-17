@@ -147,7 +147,7 @@ func TestLogin(t *testing.T) {
 			store := mock.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server, err := NewServer(store, cfg)
+			server, err := NewServer(store, *cfg)
 			require.NoError(t, err)
 
 			rec := httptest.NewRecorder()
@@ -220,7 +220,7 @@ func TestClearSession(t *testing.T) {
 			store := mock.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server, err := NewServer(store, cfg)
+			server, err := NewServer(store, *cfg)
 			require.NoError(t, err)
 
 			rec := httptest.NewRecorder()

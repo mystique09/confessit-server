@@ -4,14 +4,22 @@ import (
 	"cnfs/config"
 	"cnfs/handler"
 
-	"github.com/labstack/gommon/log"
+	"log"
 )
 
 func main() {
-	cfg, err := config.LoadConfig(".", "app")
+	cfgLoader := config.NewConfigLoader(".", "app")
+	serveConfig, err := config.NewServerConfig(cfgLoader)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	handler.Launch(&cfg)
+	tokenConfig, err := config.NewTokenConfig(cfgLoader)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cfg := config.NewConfig(serveConfig, tokenConfig)
+
+	handler.Launch(cfg)
 }

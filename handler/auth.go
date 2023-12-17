@@ -104,12 +104,12 @@ func (s *Server) loginUser(c echo.Context) error {
 		return c.JSON(403, newError("password mismatch"))
 	}
 
-	accessToken, accessTokenPayload, err := s.tokenMaker.CreateToken(user.ID, user.Username, s.cfg.AccessTokenDuration)
+	accessToken, accessTokenPayload, err := s.tokenMaker.CreateToken(user.ID, user.Username, s.tokenCfg.AccessTokenDuration())
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, newError(err.Error()))
 	}
 
-	refreshToken, refreshTokenPayload, err := s.tokenMaker.CreateToken(user.ID, user.Username, s.cfg.RefreshTokenDuration)
+	refreshToken, refreshTokenPayload, err := s.tokenMaker.CreateToken(user.ID, user.Username, s.tokenCfg.RefreshTokenDuration())
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, newError(err.Error()))
 	}

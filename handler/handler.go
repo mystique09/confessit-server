@@ -24,13 +24,12 @@ package handler
 import (
 	"cnfs/common"
 	db "cnfs/db/sqlc"
+	"cnfs/domain"
 	"cnfs/token"
 	"cnfs/web"
 	"log"
 	"net/http"
 	"os"
-
-	"cnfs/config"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -39,7 +38,8 @@ import (
 
 type (
 	Server struct {
-		cfg        *config.Config
+		cfg        domain.IServerConfig
+		tokenCfg   domain.ITokenConfig
 		router     *echo.Echo
 		store      db.Store
 		tokenMaker token.Maker
@@ -57,26 +57,33 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 	return nil
 }
 
-func Launch(cfg *config.Config) {
-	conn := common.SetupDb(cfg.DatabaseUrl)
+func Launch(cfg domain.IConfig) {
+	serverConfig := cfg.ServerConfig()
+
+	dbUrl := serverConfig.DatabaseUrl()
+	host := serverConfig.Host() + ":" + serverConfig.Port()
+	conn := common.SetupDb(dbUrl)
 	store := db.NewStore(conn, cfg)
+
 	server, err := NewServer(store, cfg)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	log.Fatal(server.router.Start(cfg.Host + ":" + cfg.Port))
+	log.Fatal(server.router.Start(host))
 }
 
-func NewServer(store db.Store, cfg *config.Config) (*Server, error) {
+func NewServer(store db.Store, cfg domain.IConfig) (*Server, error) {
+	tokenConfig := cfg.TokenConfig()
+	serverConfig := cfg.ServerConfig()
 
-	tokenMaker, err := token.NewPasetoMaker(cfg.PasetoSymmetricKey)
+	tokenMaker, err := token.NewPasetoMaker(tokenConfig.AuthSecretKey())
 	if err != nil {
 		log.Fatalf("cannot make token maker: %s", err.Error())
 	}
 
 	server := &Server{
-		cfg:        cfg,
+		cfg:        serverConfig,
 		store:      store,
 		tokenMaker: tokenMaker,
 	}

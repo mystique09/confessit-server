@@ -8,111 +8,111 @@ import (
 )
 
 type configLoader struct {
-  reader *viper.Viper
+	reader *viper.Viper
 }
 
 func NewConfigLoader(path, name string) domain.IConfigLoader {
-  reader := viper.New()
-  reader.AddConfigPath(path)
-  reader.SetConfigName(name)
-  reader.AutomaticEnv()
+	reader := viper.New()
+	reader.AddConfigPath(path)
+	reader.SetConfigName(name)
+	reader.AutomaticEnv()
 
-  return configLoader{reader}
+	return configLoader{reader}
 }
 
 func (loader configLoader) Unmarshal(cfg interface{}) error {
-  if err := loader.reader.ReadInConfig(); err != nil {
-    return err
-  }
+	if err := loader.reader.ReadInConfig(); err != nil {
+		return err
+	}
 
-  return loader.reader.Unmarshal(&cfg)
+	return loader.reader.Unmarshal(&cfg)
 }
 
 type config struct {
-  server domain.IServerConfig
-  token domain.ITokenConfig
+	server domain.IServerConfig
+	token  domain.ITokenConfig
 }
 
 func NewConfig(server domain.IServerConfig, token domain.ITokenConfig) domain.IConfig {
-  return config{
-    server: server,
-    token: token,
-  }
+	return config{
+		server: server,
+		token:  token,
+	}
 }
 
 func (cfg config) ServerConfig() domain.IServerConfig {
-  return cfg.server
+	return cfg.server
 }
 
 func (cfg config) TokenConfig() domain.ITokenConfig {
-  return cfg.token
+	return cfg.token
 }
 
 type serverConfig struct {
-  host string `mapstructure:"HOST"`
-  port string `mapstructure:"PORT"`
-  databaseUrl string `mapstructure:"DATABASE_URL"`
-  clientUrl string `mapstructure:"CLIENT_URL"`
+	host        string `mapstructure:"HOST"`
+	port        string `mapstructure:"PORT"`
+	databaseUrl string `mapstructure:"DATABASE_URL"`
+	clientUrl   string `mapstructure:"CLIENT_URL"`
 }
 
 func NewServerConfig(loader domain.IConfigLoader) (domain.IServerConfig, error) {
-  var cfg serverConfig
-  if err := loader.Unmarshal(&cfg); err != nil {
-    return serverConfig{}, err
-  }
-  return cfg, nil
+	var cfg serverConfig
+	if err := loader.Unmarshal(&cfg); err != nil {
+		return serverConfig{}, err
+	}
+	return cfg, nil
 }
 
 func (cfg serverConfig) Host() string {
-  return cfg.host
+	return cfg.host
 }
 
 func (cfg serverConfig) Port() string {
-  return cfg.port
+	return cfg.port
 }
 
 func (cfg serverConfig) DatabaseUrl() string {
-  return cfg.databaseUrl
+	return cfg.databaseUrl
 }
 
 func (cfg serverConfig) ClientUrl() string {
-  return cfg.clientUrl
+	return cfg.clientUrl
 }
 
 type tokenConfig struct {
-  authSecretKey string `mapstructure:"PASETO_SYMMETRIC_KEY"`
-  accessTokenSecretKey string `mapstructure:"ACCESS_TOKEN_SECRET"`
-  accessTokenDuration time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
-  refreshTokenSecretKey string `mapstructure:"REFRESH_TOKEN_SECRET"`
-  refreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
+	authSecretKey         string        `mapstructure:"PASETO_SYMMETRIC_KEY"`
+	accessTokenSecretKey  string        `mapstructure:"ACCESS_TOKEN_SECRET"`
+	accessTokenDuration   time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
+	refreshTokenSecretKey string        `mapstructure:"REFRESH_TOKEN_SECRET"`
+	refreshTokenDuration  time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
 }
 
 func NewTokenConfig(loader domain.IConfigLoader) (domain.ITokenConfig, error) {
-  var cfg tokenConfig
-  if err := loader.Unmarshal(&cfg); err != nil {
-    return tokenConfig{}, err
-  }
-  return cfg, nil
+	var cfg tokenConfig
+	if err := loader.Unmarshal(&cfg); err != nil {
+		return tokenConfig{}, err
+	}
+	return cfg, nil
 }
 
 func (cfg tokenConfig) AuthSecretKey() string {
-  return cfg.authSecretKey
+	return cfg.authSecretKey
 }
 
 func (cfg tokenConfig) AccessTokenSecretKey() string {
-  return cfg.accessTokenSecretKey
+	return cfg.accessTokenSecretKey
 }
 
-func(cfg tokenConfig) AccessTokenDuration() time.Duration {
-  return cfg.accessTokenDuration
+func (cfg tokenConfig) AccessTokenDuration() time.Duration {
+	return cfg.accessTokenDuration
 }
 
 func (cfg tokenConfig) RefreshTokenSecretKey() string {
-  return cfg.refreshTokenSecretKey
+	return cfg.refreshTokenSecretKey
 }
 
 func (cfg tokenConfig) RefreshTokenDuration() time.Duration {
-  return cfg.refreshTokenDuration
+	return cfg.refreshTokenDuration
 }
 
 // func LoadConfig(path, name string) (Config, error) {

@@ -185,7 +185,7 @@ func TestCreateUser(t *testing.T) {
 			store := mock.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server, err := NewServer(store, cfg)
+			server, err := NewServer(store, *cfg)
 			require.NoError(t, err)
 
 			rec := httptest.NewRecorder()
@@ -282,14 +282,14 @@ func TestListUsers(t *testing.T) {
 			store := mock.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server, err := NewServer(store, cfg)
+			server, err := NewServer(store, *cfg)
 			require.NoError(t, err)
 
 			rec := httptest.NewRecorder()
 			url := fmt.Sprintf("/api/v1/users?page=%s", tc.payload)
 
 			req := httptest.NewRequest(http.MethodGet, url, nil)
-			token, _, err := server.tokenMaker.CreateToken(uuid.New(), common.RandomString(12), cfg.AccessTokenDuration)
+			token, _, err := server.tokenMaker.CreateToken(uuid.New(), common.RandomString(12), server.tokenCfg.AccessTokenDuration())
 			require.NoError(t, err)
 			req.Header.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", token))
 
@@ -382,14 +382,14 @@ func TestGetUserById(t *testing.T) {
 			store := mock.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server, err := NewServer(store, cfg)
+			server, err := NewServer(store, *cfg)
 			require.NoError(t, err)
 
 			rec := httptest.NewRecorder()
 			url := fmt.Sprintf("/api/v1/users/%s", tc.payload)
 
 			req := httptest.NewRequest(http.MethodGet, url, nil)
-			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, cfg.AccessTokenDuration)
+			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.tokenCfg.AccessTokenDuration())
 			require.NoError(t, err)
 			req.Header.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", token))
 
@@ -472,7 +472,7 @@ func TestGetUserByUsername(t *testing.T) {
 			store := mock.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server, err := NewServer(store, cfg)
+			server, err := NewServer(store, *cfg)
 			require.NoError(t, err)
 
 			rec := httptest.NewRecorder()
@@ -650,14 +650,14 @@ func TestUpdateUser(t *testing.T) {
 			store := mock.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server, err := NewServer(store, cfg)
+			server, err := NewServer(store, *cfg)
 			require.NoError(t, err)
 
 			url := fmt.Sprintf("/api/v1/users/%s", user.ID)
 
 			req := httptest.NewRequest(http.MethodPatch, url, strings.NewReader(tc.payload))
 
-			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, cfg.AccessTokenDuration)
+			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.tokenCfg.AccessTokenDuration())
 			require.NoError(t, err)
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			req.Header.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", token))
@@ -762,14 +762,14 @@ func TestDeleteUser(t *testing.T) {
 			store := mock.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server, err := NewServer(store, cfg)
+			server, err := NewServer(store, *cfg)
 			require.NoError(t, err)
 
 			url := fmt.Sprintf("/api/v1/users/%s", user.ID)
 
 			req := httptest.NewRequest(http.MethodDelete, url, strings.NewReader(tc.payload))
 
-			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, cfg.AccessTokenDuration)
+			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.tokenCfg.AccessTokenDuration())
 			require.NoError(t, err)
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			req.Header.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", token))

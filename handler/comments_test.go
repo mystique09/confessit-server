@@ -67,7 +67,7 @@ func TestListAllComments(t *testing.T) {
 			store := mock.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server, err := NewServer(store, cfg)
+			server, err := NewServer(store, *cfg)
 			require.NoError(t, err)
 
 			rec := httptest.NewRecorder()
@@ -128,7 +128,7 @@ func TestGetComment(t *testing.T) {
 			store := mock.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server, err := NewServer(store, cfg)
+			server, err := NewServer(store, *cfg)
 			require.NoError(t, err)
 
 			rec := httptest.NewRecorder()
@@ -225,13 +225,13 @@ func TestCreateComment(t *testing.T) {
 			store := mock.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server, err := NewServer(store, cfg)
+			server, err := NewServer(store, *cfg)
 			require.NoError(t, err)
 
 			rec := httptest.NewRecorder()
 			req := httptest.NewRequest("POST", "/api/v1/comments", strings.NewReader(tc.payload))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-			tokenPayload, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, cfg.AccessTokenDuration)
+			tokenPayload, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.tokenCfg.AccessTokenDuration())
 			require.NoError(t, err)
 			req.Header.Set("Authorization", "Bearer "+tokenPayload)
 
@@ -332,13 +332,13 @@ func TestUpdateComment(t *testing.T) {
 			store := mock.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server, err := NewServer(store, cfg)
+			server, err := NewServer(store, *cfg)
 			require.NoError(t, err)
 
 			rec := httptest.NewRecorder()
 			req := httptest.NewRequest("PUT", "/api/v1/comments/"+comment.ID.String(), strings.NewReader(tc.payload))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-			tokenPayload, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, cfg.AccessTokenDuration)
+			tokenPayload, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.tokenCfg.AccessTokenDuration())
 			require.NoError(t, err)
 			req.Header.Set("Authorization", "Bearer "+tokenPayload)
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -397,13 +397,13 @@ func TestDeleteComment(t *testing.T) {
 			store := mock.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server, err := NewServer(store, cfg)
+			server, err := NewServer(store, *cfg)
 			require.NoError(t, err)
 
 			rec := httptest.NewRecorder()
 			req := httptest.NewRequest("DELETE", "/api/v1/comments/"+tc.payload, nil)
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-			tokenPayload, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, cfg.AccessTokenDuration)
+			tokenPayload, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.tokenCfg.AccessTokenDuration())
 			require.NoError(t, err)
 			req.Header.Set("Authorization", "Bearer "+tokenPayload)
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
