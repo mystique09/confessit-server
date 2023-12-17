@@ -3,7 +3,7 @@ package domain
 import "time"
 
 type IConfigLoader interface {
-  Unmarshal(interface{}) error
+	Unmarshal(interface{}) error
 }
 
 type IConfig interface {
@@ -12,16 +12,16 @@ type IConfig interface {
 }
 
 type ITokenConfig interface {
-	AuthSecretKey() string
-	AccessTokenSecretKey() string
-	AccessTokenDuration() time.Duration
-	RefreshTokenSecretKey() string
-	RefreshTokenDuration() time.Duration
+	GetAuthSecretKey() string
+	GetAccessTokenSecretKey() string
+	GetAccessTokenDuration() time.Duration
+	GetRefreshTokenSecretKey() string
+	GetRefreshTokenDuration() time.Duration
 }
 
 type IServerConfig interface {
-	Host() string
-	Port() string
-	DatabaseUrl() string
-	ClientUrl() string
+	GetHost() string
+	GetPort() string
+	GetDatabaseUrl() string
+	GetClientUrl() string
 }

@@ -274,7 +274,7 @@ func TestListMessages(t *testing.T) {
 			require.NoError(t, err)
 
 			req := httptest.NewRequest(http.MethodGet, tc.payload, nil)
-			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.tokenCfg.AccessTokenDuration())
+			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.tokenCfg.GetAccessTokenDuration())
 			require.NoError(t, err)
 			req.Header.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", token))
 
@@ -342,7 +342,7 @@ func TestListMessagesUnauthorized(t *testing.T) {
 			require.NoError(t, err)
 
 			req := httptest.NewRequest(http.MethodGet, tc.payload, nil)
-			token, _, err := server.tokenMaker.CreateToken(uuid.New(), common.RandomString(12), server.tokenCfg.AccessTokenDuration())
+			token, _, err := server.tokenMaker.CreateToken(uuid.New(), common.RandomString(12), server.tokenCfg.GetAccessTokenDuration())
 			require.NoError(t, err)
 			req.Header.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", token))
 
@@ -446,7 +446,7 @@ func TestGetMessageById(t *testing.T) {
 			require.NoError(t, err)
 
 			req := httptest.NewRequest(http.MethodGet, tc.payload, nil)
-			token, _, err := server.tokenMaker.CreateToken(uuid.New(), common.RandomString(12), server.tokenCfg.AccessTokenDuration())
+			token, _, err := server.tokenMaker.CreateToken(uuid.New(), common.RandomString(12), server.tokenCfg.GetAccessTokenDuration())
 			require.NoError(t, err)
 			req.Header.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", token))
 
@@ -566,7 +566,7 @@ func TestUpdateMessage(t *testing.T) {
 			require.NoError(t, err)
 
 			req := httptest.NewRequest(http.MethodPut, tc.payload, nil)
-			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.tokenCfg.AccessTokenDuration())
+			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.tokenCfg.GetAccessTokenDuration())
 			require.NoError(t, err)
 			req.Header.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", token))
 
@@ -673,7 +673,7 @@ func TestDeleteMessage(t *testing.T) {
 			require.NoError(t, err)
 
 			req := httptest.NewRequest(http.MethodDelete, tc.payload, nil)
-			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.tokenCfg.AccessTokenDuration())
+			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.tokenCfg.GetAccessTokenDuration())
 			require.NoError(t, err)
 			req.Header.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", token))
 

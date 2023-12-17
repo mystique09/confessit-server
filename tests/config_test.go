@@ -8,18 +8,18 @@ import (
 )
 
 func TestCreateNewConfig(t *testing.T) {
-  cfgLoader := config.NewConfigLoader("../", "app")
-  serverCfg, err := config.NewServerConfig(cfgLoader)
-  if err != nil {
-    t.Error("error creating server config")
-  }
+	cfgLoader := config.NewConfigLoader("../", "app")
+	serverCfg, err := config.NewServerConfig(cfgLoader)
+	if err != nil {
+		t.Error("error creating server config")
+	}
 
-  tokenConfig, err := config.NewTokenConfig(cfgLoader)
-  if err != nil {
-    t.Error("error creating token config")
-  }
+	tokenConfig, err := config.NewTokenConfig(cfgLoader)
+	if err != nil {
+		t.Error("error creating token config")
+	}
 
-  cfg := config.NewConfig(serverCfg, tokenConfig)
-  assert.NotNil(t, cfg)
-  assert.Empty(t, cfg.ServerConfig().Host())
+	cfg := config.NewConfig(serverCfg, tokenConfig)
+	assert.NotNil(t, cfg)
+	assert.NotEmpty(t, cfg.ServerConfig().GetHost())
 }

@@ -205,7 +205,7 @@ func TestCreateNewPost(t *testing.T) {
 			rec := httptest.NewRecorder()
 			req := httptest.NewRequest("POST", "/api/v1/posts", strings.NewReader(tc.payload))
 			req.Header.Set("Content-Type", "application/json")
-			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.tokenCfg.AccessTokenDuration())
+			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.tokenCfg.GetAccessTokenDuration())
 			require.NoError(t, err)
 			req.Header.Set("Authorization", "Bearer "+token)
 
@@ -362,7 +362,7 @@ func TestUpdateOnePost(t *testing.T) {
 			rec := httptest.NewRecorder()
 			req := httptest.NewRequest("PATCH", "/api/v1/posts/"+post.ID.String(), strings.NewReader(tc.payload))
 			req.Header.Set("Content-Type", "application/json")
-			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.tokenCfg.AccessTokenDuration())
+			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.tokenCfg.GetAccessTokenDuration())
 			require.NoError(t, err)
 			req.Header.Set("Authorization", "Bearer "+token)
 
@@ -448,7 +448,7 @@ func TestDeletePost(t *testing.T) {
 			rec := httptest.NewRecorder()
 			req := httptest.NewRequest("DELETE", tc.payload, nil)
 			req.Header.Set("Content-Type", "application/json")
-			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.tokenCfg.AccessTokenDuration())
+			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.tokenCfg.GetAccessTokenDuration())
 			require.NoError(t, err)
 			req.Header.Set("Authorization", "Bearer "+token)
 

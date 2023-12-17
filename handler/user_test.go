@@ -289,7 +289,7 @@ func TestListUsers(t *testing.T) {
 			url := fmt.Sprintf("/api/v1/users?page=%s", tc.payload)
 
 			req := httptest.NewRequest(http.MethodGet, url, nil)
-			token, _, err := server.tokenMaker.CreateToken(uuid.New(), common.RandomString(12), server.tokenCfg.AccessTokenDuration())
+			token, _, err := server.tokenMaker.CreateToken(uuid.New(), common.RandomString(12), server.tokenCfg.GetAccessTokenDuration())
 			require.NoError(t, err)
 			req.Header.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", token))
 
@@ -389,7 +389,7 @@ func TestGetUserById(t *testing.T) {
 			url := fmt.Sprintf("/api/v1/users/%s", tc.payload)
 
 			req := httptest.NewRequest(http.MethodGet, url, nil)
-			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.tokenCfg.AccessTokenDuration())
+			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.tokenCfg.GetAccessTokenDuration())
 			require.NoError(t, err)
 			req.Header.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", token))
 
@@ -657,7 +657,7 @@ func TestUpdateUser(t *testing.T) {
 
 			req := httptest.NewRequest(http.MethodPatch, url, strings.NewReader(tc.payload))
 
-			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.tokenCfg.AccessTokenDuration())
+			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.tokenCfg.GetAccessTokenDuration())
 			require.NoError(t, err)
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			req.Header.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", token))
@@ -769,7 +769,7 @@ func TestDeleteUser(t *testing.T) {
 
 			req := httptest.NewRequest(http.MethodDelete, url, strings.NewReader(tc.payload))
 
-			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.tokenCfg.AccessTokenDuration())
+			token, _, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.tokenCfg.GetAccessTokenDuration())
 			require.NoError(t, err)
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 			req.Header.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", token))

@@ -60,8 +60,8 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 func Launch(cfg domain.IConfig) {
 	serverConfig := cfg.ServerConfig()
 
-	dbUrl := serverConfig.DatabaseUrl()
-	host := serverConfig.Host() + ":" + serverConfig.Port()
+	dbUrl := serverConfig.GetDatabaseUrl()
+	host := serverConfig.GetHost() + ":" + serverConfig.GetPort()
 	conn := common.SetupDb(dbUrl)
 	store := db.NewStore(conn, cfg)
 
@@ -77,7 +77,7 @@ func NewServer(store db.Store, cfg domain.IConfig) (*Server, error) {
 	tokenConfig := cfg.TokenConfig()
 	serverConfig := cfg.ServerConfig()
 
-	tokenMaker, err := token.NewPasetoMaker(tokenConfig.AuthSecretKey())
+	tokenMaker, err := token.NewPasetoMaker(tokenConfig.GetAuthSecretKey())
 	if err != nil {
 		log.Fatalf("cannot make token maker: %s", err.Error())
 	}
